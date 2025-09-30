@@ -1,39 +1,57 @@
-"use client"
+// app/admin/page.tsx (Yeni ve Tam Hali)
+"use client";
 
-import type React from "react"
-
-import { useState } from "react"
-import { useRouter } from "next/navigation"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { Alert, AlertDescription } from "@/components/ui/alert"
-import { Lock, User, Eye, EyeOff } from "lucide-react"
+import { useState } from "react";
+import { useRouter } from "next/navigation";
+import { signInWithEmailAndPassword } from "firebase/auth";
+import { auth } from "@/lib/firebase"; // Firebase auth nesnemiz
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Lock, User, Eye, EyeOff } from "lucide-react";
 
 export default function AdminLoginPage() {
-  const [credentials, setCredentials] = useState({ username: "", password: "" })
-  const [showPassword, setShowPassword] = useState(false)
-  const [error, setError] = useState("")
-  const [isLoading, setIsLoading] = useState(false)
-  const router = useRouter()
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
+  const [error, setError] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
+  const router = useRouter();
 
   const handleLogin = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setIsLoading(true)
-    setError("")
+    e.preventDefault();
+    setIsLoading(true);
+    setError("");
 
-    // Simple authentication check (in production, this would be server-side)
-    if (credentials.username === "admin" && credentials.password === "temizisyapi2024") {
-      // Set authentication state (in production, use proper JWT/session management)
-      localStorage.setItem("adminAuth", "true")
-      router.push("/admin/dashboard")
-    } else {
-      setError("Kullanıcı adı veya şifre hatalı")
+    try {
+      // Mentor Notu: Burada Firebase'in kendi doğrulama fonksiyonunu kullanıyoruz.
+      // Bu fonksiyon, kimlik bilgilerini güvenli bir şekilde Firebase sunucularına gönderir.
+      await signInWithEmailAndPassword(auth, email, password);
+      
+      // Giriş başarılı olursa, Firebase SDK'sı oturumu tarayıcıda otomatik olarak yönetir.
+      // Bizi doğrudan dashboard'a yönlendiriyoruz.
+      router.push("/admin/dashboard");
+
+    } catch (firebaseError: any) {
+      // Firebase'den gelen hata kodlarına göre kullanıcıya anlaşılır mesajlar gösteriyoruz.
+      switch (firebaseError.code) {
+        case "auth/invalid-email":
+          setError("Geçersiz e-posta formatı.");
+          break;
+        case "auth/user-not-found":
+        case "auth/wrong-password":
+        case "auth/invalid-credential":
+          setError("E-posta veya şifre hatalı.");
+          break;
+        default:
+          setError("Giriş yapılırken bir hata oluştu. Lütfen tekrar deneyin.");
+          break;
+      }
+      setIsLoading(false);
     }
-
-    setIsLoading(false)
-  }
+  };
 
   return (
     <div className="min-h-screen bg-muted/30 flex items-center justify-center p-4">
@@ -48,15 +66,15 @@ export default function AdminLoginPage() {
         <CardContent>
           <form onSubmit={handleLogin} className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="username">Kullanıcı Adı</Label>
+              <Label htmlFor="email">E-posta</Label>
               <div className="relative">
                 <User className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
                 <Input
-                  id="username"
-                  type="text"
-                  value={credentials.username}
-                  onChange={(e) => setCredentials({ ...credentials, username: e.target.value })}
-                  placeholder="Kullanıcı adınızı girin"
+                  id="email"
+                  type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  placeholder="admin@temizisyapi.com"
                   className="pl-10"
                   required
                 />
@@ -70,8 +88,8 @@ export default function AdminLoginPage() {
                 <Input
                   id="password"
                   type={showPassword ? "text" : "password"}
-                  value={credentials.password}
-                  onChange={(e) => setCredentials({ ...credentials, password: e.target.value })}
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
                   placeholder="Şifrenizi girin"
                   className="pl-10 pr-10"
                   required
@@ -98,18 +116,8 @@ export default function AdminLoginPage() {
               {isLoading ? "Giriş yapılıyor..." : "Giriş Yap"}
             </Button>
           </form>
-
-          <div className="mt-6 p-4 bg-muted/50 rounded-lg">
-            <p className="text-sm text-muted-foreground text-center">
-              Demo Giriş Bilgileri:
-              <br />
-              Kullanıcı: <code className="bg-background px-1 rounded">admin</code>
-              <br />
-              Şifre: <code className="bg-background px-1 rounded">temizisyapi2024</code>
-            </p>
-          </div>
         </CardContent>
       </Card>
     </div>
-  )
+  );
 }

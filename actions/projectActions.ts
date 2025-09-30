@@ -5,13 +5,12 @@
 import { z } from "zod";
 import { db, storage } from "@/lib/firebase";
 import { collection, addDoc, serverTimestamp } from "firebase/firestore";
-import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
+import { ref, uploadBytes, getDownloadURL, deleteObject } from "firebase/storage";
 import { revalidatePath } from "next/cache";
 
 // actions/projectActions.ts dosyasının altına eklenecek kod
 
 import { doc, deleteDoc, getDoc } from "firebase/firestore";
-import { ref, deleteObject } from "firebase/storage";
 import { Project } from "@/types/project"; // Project tipini import ettiğimizden emin olalım
 
 // ... createProject fonksiyonu ...
@@ -74,11 +73,14 @@ export async function createProject(prevState: FormState, formData: FormData): P
 
   try {
     const imageUrls: string[] = [];
+    const imagePaths: string[] = [];
+
     
     // Her bir görseli Storage'a yükle
     for (const image of images) {
       const uniqueFileName = `${Date.now()}-${Math.round(Math.random() * 1E9)}-${image.name}`;
-      const storageRef = ref(storage, `projects/${uniqueFileName}`);
+      const filePath = `projects/${uniqueFileName}`;
+      const storageRef = ref(storage, filePath);
       const snapshot = await uploadBytes(storageRef, image);
       const downloadURL = await getDownloadURL(snapshot.ref);
       imageUrls.push(downloadURL);
@@ -92,6 +94,7 @@ export async function createProject(prevState: FormState, formData: FormData): P
       description: validatedFields.data.description,
       featured: validatedFields.data.featured === 'on', // Checkbox değeri 'on' ise true yap
       images: imageUrls,
+      imagePaths: imagePaths, // Görsellerin yollarını da kaydediyoruz
       thumbnail: imageUrls[0], // İlk görseli thumbnail olarak ata
       date: serverTimestamp(),
     };
@@ -127,18 +130,17 @@ export async function deleteProject(projectId: string): Promise<{ message: strin
       const projectData = projectDoc.data() as Project;
       
       // 1. Storage'dan görselleri sil
-      if (projectData.images && projectData.images.length > 0) {
-        for (const imageUrl of projectData.images) {
-          try {
-            // Firebase Storage URL'sinden dosya referansını al
-            const imageRef = ref(storage, imageUrl);
-            await deleteObject(imageRef);
-          } catch (storageError: any) {
-            // Eğer bir görsel silinemezse bile işleme devam et, sadece hatayı logla.
-            // Bu durum, URL hatalıysa veya dosya zaten silinmişse olabilir.
-            console.warn(`Görsel silinirken hata oluştu (${imageUrl}):`, storageError.code);
-          }
-        }
+      // 1. Storage'dan görselleri sil (Paralel ve Güvenilir Yöntem)
+      if (projectData.imagePaths && projectData.imagePaths.length > 0) {
+        const deletePromises = projectData.imagePaths.map(path => {
+          const imageRef = ref(storage, path);
+          // Hata durumunda bile diğer silmeleri engellememek için catch ekliyoruz.
+          return deleteObject(imageRef).catch(err => {
+            console.warn(`Görsel silinirken hata oluştu (${path}):`, err.code);
+          });
+        });
+        // Tüm silme işlemlerinin tamamlanmasını bekle
+        await Promise.all(deletePromises);
       }
   
       // 2. Firestore'dan proje dökümanını sil

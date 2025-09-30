@@ -12,4 +12,5 @@ export interface Project {
   date: string | Timestamp; // Firestore'dan Timestamp olarak gelebilir
   location: string;
   featured: boolean;
+  imagePaths: string[];
 }
