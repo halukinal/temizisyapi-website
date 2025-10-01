@@ -35,7 +35,7 @@ async function getDashboardData() {
         return {
             id: doc.id,
             ...data,
-            date: (data.date as Timestamp)?.toDate().toLocaleDateString("tr-TR") || 'Tarih Yok',
+            date: (data.date as Timestamp)?.toDate() || new Date(),
         } as Project;
     });
     
@@ -48,8 +48,8 @@ async function getDashboardData() {
             id: doc.id,
             ...data,
              date: (data.date as Timestamp)?.toDate() || new Date(),
-        } as Message;
-    });
+            } as Message;
+        });
 
     return {
         totalProjects,
@@ -143,7 +143,7 @@ export default async function AdminDashboard() {
                                                 {message.subject || "Teklif Talebi"}
                                             </p>
                                         </div>
-                                        <div className="text-xs text-muted-foreground">{formatRelativeTime(message.date as Date)}</div>
+                                        <div className="text-xs text-muted-foreground">{formatRelativeTime(message.date)}</div>
                                     </Link>
                                 )) : <p className="text-sm text-muted-foreground text-center py-4">Yeni mesaj bulunmuyor.</p>}
                             </div>
@@ -171,7 +171,7 @@ export default async function AdminDashboard() {
                                                 {project.featured && <Badge>Öne Çıkan</Badge>}
                                             </div>
                                         </div>
-                                        <div className="text-xs text-muted-foreground">{project.date as string}</div>
+                                        <div className="text-xs text-muted-foreground">{project.date.toLocaleDateString("tr-TR")}</div>
                                     </Link>
                                 )) : <p className="text-sm text-muted-foreground text-center py-4">Henüz proje eklenmemiş.</p>}
                             </div>

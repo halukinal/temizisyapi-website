@@ -11,7 +11,7 @@ export interface Message {
   subject?: string;
   message?: string;
   projectDetails?: string;
-  date: string | Timestamp; // Firestore'dan Timestamp olarak gelecek
+  date: Date; // Firestore'dan Timestamp olarak gelir, uygulamada Date'e çevrilir.
   status: 'new' | 'processing' | 'replied';
   read: boolean;
 }   

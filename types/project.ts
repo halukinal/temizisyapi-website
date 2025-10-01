@@ -9,7 +9,7 @@ export interface Project {
   description: string;
   images: string[];
   thumbnail: string;
-  date: string | Timestamp; // Firestore'dan Timestamp olarak gelebilir
+  date: Date; // Firestore'dan Timestamp olarak gelir, uygulamada Date'e çevrilir.
   location: string;
   featured: boolean;
   imagePaths: string[];

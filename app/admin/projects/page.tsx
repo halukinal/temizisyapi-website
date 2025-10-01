@@ -27,7 +27,7 @@ async function getProjects(): Promise<Project[]> {
     return {
       id: doc.id,
       ...data,
-      date: (data.date as Timestamp)?.toDate().toLocaleDateString("tr-TR") || 'Tarih Yok',
+      date: (data.date as Timestamp)?.toDate() || new Date(),
     } as Project;
   });
 
@@ -113,7 +113,7 @@ export default async function AdminProjectsPage() {
                   <CardContent className="space-y-4 flex-grow flex flex-col justify-between">
                     <div className="space-y-2 text-sm text-muted-foreground">
                        <div className="flex items-center gap-2"><MapPin className="h-4 w-4" /><span>{project.location}</span></div>
-                       <div className="flex items-center gap-2"><Calendar className="h-4 w-4" /><span>{project.date}</span></div>
+                       <div className="flex items-center gap-2"><Calendar className="h-4 w-4" /><span>{project.date.toLocaleDateString("tr-TR")}</span></div>
                        <div className="flex items-center gap-2"><ImageIcon className="h-4 w-4" /><span>{project.images.length} görsel</span></div>
                     </div>
                     <div className="flex flex-col sm:flex-row gap-2 pt-4">

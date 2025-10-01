@@ -21,7 +21,7 @@ async function getProjects(): Promise<Project[]> {
         return {
             id: doc.id,
             ...data,
-            date: (data.date as Timestamp)?.toDate().getFullYear().toString() || 'Tarih Yok',
+            date: (data.date as Timestamp)?.toDate() || new Date(),
         } as Project;
     });
 }

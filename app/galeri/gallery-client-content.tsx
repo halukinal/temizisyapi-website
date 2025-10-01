@@ -87,7 +87,7 @@ export function GalleryClientContent({ projects }: { projects: Project[] }) {
                                         <h3 className="font-serif text-lg font-semibold mb-2 text-balance group-hover:text-primary">{project.title}</h3>
                                         <div className="space-y-2 text-sm text-muted-foreground">
                                             <div className="flex items-center space-x-2"><MapPin className="h-4 w-4" /><span>{project.location}</span></div>
-                                            <div className="flex items-center space-x-2"><Calendar className="h-4 w-4" /><span>{project.date as string}</span></div>
+                                            <div className="flex items-center space-x-2"><Calendar className="h-4 w-4" /><span>{project.date.getFullYear()}</span></div>
                                         </div>
                                     </CardContent>
                                 </Card>

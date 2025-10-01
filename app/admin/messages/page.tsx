@@ -23,9 +23,7 @@ async function getMessages(): Promise<Message[]> {
         return {
             id: doc.id,
             ...data,
-            date: (data.date as Timestamp)?.toDate().toLocaleString("tr-TR", {
-                year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit'
-            }) || 'Tarih Yok',
+            date: (data.date as Timestamp)?.toDate() || new Date(),
         } as Message;
     });
 }
@@ -98,7 +96,11 @@ export default async function AdminMessagesPage() {
                 <div className="space-y-2 text-sm text-muted-foreground">
                     <div className="flex items-center gap-2"><Mail className="h-4 w-4" /><span>{message.email}</span></div>
                     {message.phone && <div className="flex items-center gap-2"><Phone className="h-4 w-4" /><span>{message.phone}</span></div>}
-                    <div className="flex items-center gap-2"><Calendar className="h-4 w-4" /><span>{message.date}</span></div>
+                    <div className="flex items-center gap-2"><Calendar className="h-4 w-4" /><span>
+                        {message.date.toLocaleString("tr-TR", {
+                            year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit'
+                        })}
+                    </span></div>
                 </div>
                 <div className="p-4 bg-muted/50 rounded-lg text-sm whitespace-pre-wrap">
                     <p>{message.message || message.projectDetails}</p>
