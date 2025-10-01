@@ -14,9 +14,7 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Badge } from "@/components/ui/badge";
-import {
-  MapPin, Phone, Mail, Clock, Send, Calculator, Facebook, Instagram, Linkedin, MessageCircle,
-} from "lucide-react";
+import {MapPin, Phone, Mail, Clock, Send, Calculator, Facebook, Instagram, Linkedin, MessageCircle,} from "lucide-react";
 
 // Form gönderimi sırasında düğmenin durumunu yöneten bileşen
 function SubmitButton({ text, pendingText }: { text: string; pendingText: string }) {

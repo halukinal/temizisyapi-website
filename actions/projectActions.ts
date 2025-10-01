@@ -1,5 +1,3 @@
-// actions/projectActions.ts
-
 "use server";
 
 import { z } from "zod";
@@ -7,13 +5,8 @@ import { db, storage } from "@/lib/firebase";
 import { collection, addDoc, serverTimestamp } from "firebase/firestore";
 import { ref, uploadBytes, getDownloadURL, deleteObject } from "firebase/storage";
 import { revalidatePath } from "next/cache";
-
-// actions/projectActions.ts dosyasının altına eklenecek kod
-
 import { doc, deleteDoc, getDoc } from "firebase/firestore";
 import { Project } from "@/types/project"; // Project tipini import ettiğimizden emin olalım
-
-// ... createProject fonksiyonu ...
 
 
 // Proje formu için Zod şeması
