@@ -1,40 +1,50 @@
+// app/hakkimizda/page.tsx (Yeni ve Tam Hali)
+
 import { Header } from "@/components/header"
 import { Footer } from "@/components/footer"
 import { Card, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import { CheckCircle, Award, Users, Clock, Shield, Wrench } from "lucide-react"
+import { Award, Users, Clock, Shield, Sparkles, CheckCircle } from "lucide-react"
+import type { Metadata } from "next";
+
+// SEO Bilgileri
+export const metadata: Metadata = {
+  title: "Hakkımızda | Temiz İş Yapı",
+  description: "1976'dan bugüne 48 yıllık deneyimle inşaat ve yapı sektöründe kaliteli işçilik, estetik tasarımlar ve müşteri odaklı yaklaşım sunuyoruz.",
+};
 
 export default function AboutPage() {
+  // Dokümandan gelen "Neden Bizi Tercih Etmelisiniz?" maddeleri
   const strengths = [
     {
       icon: Award,
-      title: "Kaliteli Malzeme",
-      description: "Sektörün lider markalarından temin ettiğimiz yüksek kaliteli malzemeler kullanıyoruz.",
-    },
-    {
-      icon: Users,
-      title: "Uzman Ekip",
-      description: "Alanında deneyimli, sertifikalı ve sürekli eğitim alan profesyonel ekibimiz.",
+      title: "Kaliteli İşçilik",
+      description: "Her projede yüksek kalite standartlarımızı koruyarak, beklentilerin ötesine geçiyoruz.",
     },
     {
       icon: Clock,
       title: "Zamanında Teslimat",
-      description: "Belirlenen sürelere uygun, hızlı ve güvenilir proje teslimi garantisi.",
+      description: "Projelerimizi her zaman söz verdiğimiz ve planladığımız sürede tamamlıyoruz.",
+    },
+    {
+      icon: Sparkles,
+      title: "Dayanıklı ve Estetik Çözümler",
+      description: "Hem uzun ömürlü ve sağlam, hem de modern ve estetik tasarımlar sunuyoruz.",
     },
     {
       icon: Shield,
-      title: "Garanti ve Servis",
-      description: "Tüm işlerimizde uzun süreli garanti ve satış sonrası destek hizmeti.",
+      title: "Güvenilir Hizmet",
+      description: "Müşterilerimizle şeffaflığa dayalı, uzun vadeli ilişkiler kurarak güven sağlıyoruz.",
     },
     {
       icon: CheckCircle,
       title: "Müşteri Memnuniyeti",
-      description: "Her projede %100 müşteri memnuniyeti hedefiyle çalışıyoruz.",
+      description: "Müşteri taleplerini en iyi şekilde anlayarak onlara en uygun ve etkili çözümleri üretiyoruz.",
     },
     {
-      icon: Wrench,
-      title: "Teknik Destek",
-      description: "Proje öncesi ücretsiz keşif ve teknik danışmanlık hizmeti sunuyoruz.",
+      icon: Users,
+      title: "48 Yıllık Deneyim",
+      description: "1976'dan bugüne sektörde edindiğimiz tecrübeyle projelerinize değer katıyoruz.",
     },
   ]
 
@@ -48,8 +58,7 @@ export default function AboutPage() {
             <div className="text-center max-w-3xl mx-auto">
               <h1 className="font-serif text-4xl md:text-5xl font-bold text-primary mb-6 text-balance">Hakkımızda</h1>
               <p className="text-lg text-muted-foreground text-pretty leading-relaxed">
-                20 yıllık tecrübemiz ve müşteri odaklı yaklaşımımızla alüminyum, cam ve PVC sektöründe güvenilir
-                çözümler sunuyoruz.
+                48 yıllık deneyim, kaliteli işçilik ve müşteri odaklı yaklaşımımızla yaşam alanlarınıza değer katıyoruz.
               </p>
             </div>
           </div>
@@ -63,37 +72,29 @@ export default function AboutPage() {
               <div className="space-y-6">
                 <div>
                   <Badge variant="secondary" className="mb-4">
-                    1999'dan Beri Hizmetinizdeyiz
+                    1976'dan Beri Hizmetinizdeyiz
                   </Badge>
                   <h2 className="font-serif text-3xl md:text-4xl font-bold text-primary mb-6 text-balance">
-                    Temizişyapı Hikayesi
+                    Temizişyapı'nın Hikayesi
                   </h2>
                 </div>
 
                 <div className="space-y-4 text-muted-foreground leading-relaxed">
                   <p className="text-pretty">
-                    Temizişyapı olarak 1999 yılında kurulduğumuz günden bu yana, alüminyum doğrama, cam balkon ve PVC
-                    kapı-pencere sistemleri alanında faaliyet göstermekteyiz. Sektördeki 20 yıllık deneyimimiz boyunca
-                    binlerce projeyi başarıyla tamamladık.
+                    1976 yılından bu yana sektörde faaliyet gösteren Temiz İş Yapı, 48 yıllık deneyimiyle inşaat ve yapı sektöründe hizmet vermektedir. Kaliteli işçilik, estetik tasarımlar ve müşteri odaklı yaklaşımı bir araya getirerek yaşam alanlarına değer katmayı hedefliyoruz.
                   </p>
                   <p className="text-pretty">
-                    Misyonumuz, müşterilerimizin yaşam kalitesini artıracak, enerji verimliliği yüksek ve estetik
-                    çözümler sunmaktır. Vizyonumuz ise Türkiye'nin önde gelen alüminyum, cam ve PVC çözümleri firması
-                    olmaktır.
-                  </p>
-                  <p className="text-pretty">
-                    Kalite, güvenilirlik ve müşteri memnuniyeti temel değerlerimizdir. Her projede bu değerleri ön
-                    planda tutarak, sektörde fark yaratan işler çıkarıyoruz.
+                    Misyonumuz, estetik, dayanıklılık ve işlevselliği birleştiren yenilikçi çözümlerle projeleri hayata geçirmektir. Her bir projede, müşterilerimizin beklentilerini aşan sonuçlar elde etmek için titizlikle çalışıyoruz.
                   </p>
                 </div>
 
                 <div className="grid grid-cols-2 gap-4 pt-4">
                   <div className="text-center p-4 bg-muted/50 rounded-lg">
                     <div className="text-2xl font-bold text-primary">1000+</div>
-                    <div className="text-sm text-muted-foreground">Tamamlanan Proje</div>
+                    <div className="text-sm text-muted-foreground">Memnun Müşteri</div>
                   </div>
                   <div className="text-center p-4 bg-muted/50 rounded-lg">
-                    <div className="text-2xl font-bold text-primary">20+</div>
+                    <div className="text-2xl font-bold text-primary">48</div>
                     <div className="text-sm text-muted-foreground">Yıllık Tecrübe</div>
                   </div>
                 </div>
@@ -103,8 +104,8 @@ export default function AboutPage() {
               <div className="relative">
                 <Card className="overflow-hidden">
                   <img
-                    src="/company-building-and-workshop-exterior.jpg"
-                    alt="Temizişyapı fabrika ve ofis binası"
+                    src="/professional-construction-team-installing-aluminum.jpg"
+                    alt="Temizişyapı ekibi alüminyum montajı yaparken"
                     className="w-full h-[500px] object-cover"
                   />
                 </Card>
@@ -118,10 +119,10 @@ export default function AboutPage() {
           <div className="container mx-auto px-4 sm:px-6 lg:px-8">
             <div className="text-center mb-12">
               <h2 className="font-serif text-3xl md:text-4xl font-bold text-primary mb-4 text-balance">
-                Neden Temizişyapı?
+                Neden Bizi Tercih Etmelisiniz?
               </h2>
               <p className="text-muted-foreground text-lg max-w-2xl mx-auto text-pretty">
-                Sektördeki deneyimimiz ve kalite anlayışımızla size en iyi hizmeti sunmak için çalışıyoruz.
+                Sektördeki derin tecrübemiz ve kalite anlayışımızla projeleriniz için en doğru partneriz.
               </p>
             </div>
 
@@ -143,36 +144,6 @@ export default function AboutPage() {
                   </CardContent>
                 </Card>
               ))}
-            </div>
-          </div>
-        </section>
-
-        {/* Values Section */}
-        <section className="py-16 bg-background">
-          <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="max-w-4xl mx-auto text-center">
-              <h2 className="font-serif text-3xl md:text-4xl font-bold text-primary mb-8 text-balance">Değerlerimiz</h2>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-                <div className="space-y-4">
-                  <h3 className="font-serif text-xl font-semibold text-primary">Kalite</h3>
-                  <p className="text-muted-foreground text-pretty">
-                    Her projede en yüksek kalite standartlarını uygulayarak, uzun ömürlü ve güvenilir çözümler
-                    sunuyoruz.
-                  </p>
-                </div>
-                <div className="space-y-4">
-                  <h3 className="font-serif text-xl font-semibold text-primary">Güvenilirlik</h3>
-                  <p className="text-muted-foreground text-pretty">
-                    Sözümüzü tutmak ve müşterilerimizin güvenini kazanmak en önemli önceliğimizdir.
-                  </p>
-                </div>
-                <div className="space-y-4">
-                  <h3 className="font-serif text-xl font-semibold text-primary">İnovasyon</h3>
-                  <p className="text-muted-foreground text-pretty">
-                    Sektördeki yenilikleri takip ederek, en modern teknolojileri projelerimizde kullanıyoruz.
-                  </p>
-                </div>
-              </div>
             </div>
           </div>
         </section>

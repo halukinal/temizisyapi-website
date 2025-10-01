@@ -1,57 +1,36 @@
 // app/iletisim/page.tsx
-
-"use client";
-
-import { useFormState, useFormStatus } from "react-dom";
-import { createContactMessage, createQuoteRequest } from "@/actions/messageActions";
+import type { Metadata } from "next";
 import { Header } from "@/components/header";
 import { Footer } from "@/components/footer";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
-import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Checkbox } from "@/components/ui/checkbox";
-import { Badge } from "@/components/ui/badge";
-import {MapPin, Phone, Mail, Clock, Send, Calculator, Facebook, Instagram, Linkedin, MessageCircle,} from "lucide-react";
+import { MapPin, Phone, Mail, Clock, Facebook, Instagram, Linkedin, MessageCircle } from "lucide-react";
+import { ContactForms } from "./contact-forms"; // Yeni oluşturduğumuz istemci bileşenini import ediyoruz
 
-// Form gönderimi sırasında düğmenin durumunu yöneten bileşen
-function SubmitButton({ text, pendingText }: { text: string; pendingText: string }) {
-  const { pending } = useFormStatus();
-  return (
-    <Button type="submit" disabled={pending} className="w-full bg-primary hover:bg-primary/90">
-      {pending ? pendingText : text}
-      {text === "Mesaj Gönder" ? <Send className="ml-2 h-4 w-4" /> : <Calculator className="ml-2 h-4 w-4" />}
-    </Button>
-  );
-}
-
-const initialState = { message: "", errors: {} };
+// SEO Bilgileri artık burada, olması gerektiği yerde.
+export const metadata: Metadata = {
+  title: "İletişim | Temizişyapı",
+  description: "Projeleriniz için ücretsiz keşif ve detaylı teklif almak için bizimle iletişime geçin. Uzman ekibimiz size en uygun çözümleri sunmaya hazır.",
+};
 
 export default function ContactPage() {
-  const [contactState, contactFormAction] = useFormState(createContactMessage, initialState);
-  const [quoteState, quoteFormAction] = useFormState(createQuoteRequest, initialState);
-
   const contactInfo = [
-    { icon: MapPin, title: "Adres", content: "Merkez Mahallesi, Yapı Sokak No:15/A\n34000 Beşiktaş / İstanbul", },
-    { icon: Phone, title: "Telefon", content: "+90 212 555 0123\n+90 532 555 0123", },
-    { icon: Mail, title: "E-posta", content: "info@temizisyapi.com\nteklif@temizisyapi.com", },
-    { icon: Clock, title: "Çalışma Saatleri", content: "Pazartesi - Cuma: 08:00 - 18:00\nCumartesi: 09:00 - 16:00\nPazar: Kapalı", },
+    [cite_start]{ icon: MapPin, title: "Adres", content: "Beyazıt Mah. Kazımönadım Bulvari No:5 Yıldırım/BURSA" }, [cite: 203]
+    [cite_start]{ icon: Phone, title: "Telefon", content: "0532 388 28 64" }, [cite: 201]
+    [cite_start]{ icon: Mail, title: "E-posta", content: "bulentinal16@gmail.com" }, [cite: 202]
+    { icon: Clock, title: "Çalışma Saatleri", content: "Pazartesi - Cumartesi: 09:00 - 19:00\nPazar: Kapalı" },
   ];
 
   const socialLinks = [
-    { icon: Facebook, name: "Facebook", url: "#" },
-    { icon: Instagram, name: "Instagram", url: "#" },
-    { icon: Linkedin, name: "LinkedIn", url: "#" },
-    { icon: MessageCircle, name: "WhatsApp", url: "#" },
+    [cite_start]{ icon: Facebook, name: "Facebook", url: "#" }, [cite: 207]
+    [cite_start]{ icon: Instagram, name: "Instagram", url: "#" }, [cite: 206]
+    { icon: MessageCircle, name: "WhatsApp", url: "https://wa.me/905323882864" }, // WhatsApp linkini ekledim
   ];
 
   return (
     <div className="min-h-screen flex flex-col">
       <Header />
       <main className="flex-1">
-        {/* Hero ve İletişim Bilgileri Bölümleri aynı kalabilir... */}
         <section className="py-16 bg-muted/30">
           <div className="container mx-auto px-4 sm:px-6 lg:px-8">
             <div className="text-center max-w-3xl mx-auto">
@@ -94,161 +73,27 @@ export default function ContactPage() {
           </div>
         </section>
         
-        {/* Forms Section */}
-        <section className="py-16 bg-muted/30">
-          <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-              {/* Contact Form */}
-              <Card>
-                <CardHeader>
-                  <CardTitle className="font-serif text-2xl flex items-center space-x-2">
-                    <Send className="h-6 w-6 text-primary" />
-                    <span>İletişim Formu</span>
-                  </CardTitle>
-                  <p className="text-muted-foreground">
-                    Genel sorularınız için bu formu kullanabilirsiniz. Size en kısa sürede dönüş yapacağız.
-                  </p>
-                </CardHeader>
-                <CardContent>
-                  <form action={contactFormAction} className="space-y-4">
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      <div className="space-y-2">
-                        <Label htmlFor="contact-name">Ad Soyad *</Label>
-                        <Input id="contact-name" name="name" required placeholder="Adınız ve soyadınız" />
-                        {contactState.errors?.name && <p className="text-sm text-destructive">{contactState.errors.name[0]}</p>}
-                      </div>
-                      <div className="space-y-2">
-                        <Label htmlFor="contact-phone">Telefon</Label>
-                        <Input id="contact-phone" name="phone" type="tel" placeholder="0532 555 0123" />
-                      </div>
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="contact-email">E-posta *</Label>
-                      <Input id="contact-email" name="email" type="email" required placeholder="ornek@email.com" />
-                      {contactState.errors?.email && <p className="text-sm text-destructive">{contactState.errors.email[0]}</p>}
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="contact-subject">Konu</Label>
-                      <Input id="contact-subject" name="subject" placeholder="Mesajınızın konusu" />
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="contact-message">Mesaj *</Label>
-                      <Textarea id="contact-message" name="message" required placeholder="Mesajınızı buraya yazın..." rows={4} />
-                      {contactState.errors?.message && <p className="text-sm text-destructive">{contactState.errors.message[0]}</p>}
-                    </div>
-                    <SubmitButton text="Mesaj Gönder" pendingText="Gönderiliyor..." />
-                    {contactState.message && !Object.keys(contactState.errors ?? {}).length && (
-                        <Badge variant="secondary" className="bg-green-100 text-green-800 px-4 py-2 mt-4 w-full justify-center">
-                            {contactState.message}
-                        </Badge>
-                    )}
-                  </form>
-                </CardContent>
-              </Card>
+        {/* İnteraktif formlar artık bu bileşenden geliyor */}
+        <ContactForms />
 
-              {/* Quote Request Form */}
-              <Card>
-                <CardHeader>
-                   <CardTitle className="font-serif text-2xl flex items-center space-x-2">
-                    <Calculator className="h-6 w-6 text-primary" />
-                    <span>Teklif Talep Formu</span>
-                  </CardTitle>
-                  <p className="text-muted-foreground">
-                    Projeniz için detaylı teklif almak istiyorsanız bu formu doldurun. Ücretsiz keşif hizmeti sunuyoruz.
-                  </p>
-                </CardHeader>
-                <CardContent>
-                  <form action={quoteFormAction} className="space-y-4">
-                    {/* Tüm inputlara name attribute ekliyoruz */}
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div className="space-y-2">
-                            <Label htmlFor="quote-name">Ad Soyad *</Label>
-                            <Input id="quote-name" name="name" required/>
-                            {quoteState.errors?.name && <p className="text-sm text-destructive">{quoteState.errors.name[0]}</p>}
-                        </div>
-                        <div className="space-y-2">
-                            <Label htmlFor="quote-phone">Telefon *</Label>
-                            <Input id="quote-phone" name="phone" type="tel" required/>
-                            {quoteState.errors?.phone && <p className="text-sm text-destructive">{quoteState.errors.phone[0]}</p>}
-                        </div>
-                    </div>
-                    <div className="space-y-2">
-                        <Label htmlFor="quote-email">E-posta *</Label>
-                        <Input id="quote-email" name="email" type="email" required/>
-                        {quoteState.errors?.email && <p className="text-sm text-destructive">{quoteState.errors.email[0]}</p>}
-                    </div>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div className="space-y-2">
-                            <Label htmlFor="quote-service">Hizmet Türü *</Label>
-                            <Select name="service" required>
-                                <SelectTrigger><SelectValue placeholder="Hizmet seçin" /></SelectTrigger>
-                                <SelectContent>
-                                    <SelectItem value="pvc">PVC Kapı Pencere</SelectItem>
-                                    <SelectItem value="aluminum">Alüminyum Doğrama</SelectItem>
-                                    <SelectItem value="glass-balcony">Cam Balkon</SelectItem>
-                                    <SelectItem value="facade">Cephe Sistemleri</SelectItem>
-                                    <SelectItem value="multiple">Birden Fazla Hizmet</SelectItem>
-                                </SelectContent>
-                            </Select>
-                            {quoteState.errors?.service && <p className="text-sm text-destructive">{quoteState.errors.service[0]}</p>}
-                        </div>
-                        <div className="space-y-2">
-                            <Label htmlFor="quote-project-type">Proje Türü</Label>
-                            <Select name="projectType">
-                                <SelectTrigger><SelectValue placeholder="Proje türü seçin" /></SelectTrigger>
-                                <SelectContent>
-                                    <SelectItem value="residential">Konut</SelectItem>
-                                    <SelectItem value="commercial">Ticari</SelectItem>
-                                    <SelectItem value="industrial">Endüstriyel</SelectItem>
-                                    <SelectItem value="renovation">Tadilat</SelectItem>
-                                </SelectContent>
-                            </Select>
-                        </div>
-                    </div>
-                    <div className="space-y-2">
-                        <Label htmlFor="quote-description">Proje Detayları *</Label>
-                        <Textarea id="quote-description" name="description" placeholder="Metrekare, kat sayısı, özel istekler vb." rows={4} required/>
-                        {quoteState.errors?.description && <p className="text-sm text-destructive">{quoteState.errors.description[0]}</p>}
-                    </div>
-                    <div className="flex items-center space-x-2">
-                        <Checkbox id="consent" name="consent" required />
-                        <Label htmlFor="consent" className="text-sm text-muted-foreground">
-                            Kişisel verilerimin işlenmesine ve iletişim kurulmasına onay veriyorum. *
-                        </Label>
-                    </div>
-                     {quoteState.errors?.consent && <p className="text-sm text-destructive">{quoteState.errors.consent[0]}</p>}
-                    <SubmitButton text="Teklif Talep Et" pendingText="Gönderiliyor..." />
-                    {quoteState.message && !Object.keys(quoteState.errors ?? {}).length && (
-                         <Badge variant="secondary" className="bg-green-100 text-green-800 px-4 py-2 mt-4 w-full justify-center">
-                            {quoteState.message}
-                        </Badge>
-                    )}
-                  </form>
-                </CardContent>
-              </Card>
-            </div>
-          </div>
-        </section>
-
-        {/* Map Section - Aynen kalabilir */}
         <section className="py-16 bg-background">
           <div className="container mx-auto px-4 sm:px-6 lg:px-8">
             <div className="text-center mb-8">
               <h2 className="font-serif text-3xl md:text-4xl font-bold text-primary mb-4 text-balance">Konumumuz</h2>
               <p className="text-muted-foreground text-lg max-w-2xl mx-auto text-pretty">
-                Merkezi konumumuzda showroom ve ofisimizi ziyaret edebilirsiniz. Randevu almak için önceden arayın.
+                Ofisimizi ziyaret edebilirsiniz. Randevu almak için önceden aramanızı rica ederiz.
               </p>
             </div>
             <Card className="overflow-hidden">
-              <div className="aspect-video bg-muted flex items-center justify-center">
-                <div className="text-center space-y-2">
-                  <MapPin className="h-12 w-12 text-primary mx-auto" />
-                  <p className="text-muted-foreground">Harita Entegrasyonu</p>
-                  <p className="text-sm text-muted-foreground">
-                    Merkez Mahallesi, Yapı Sokak No:15/A<br/>34000 Beşiktaş / İstanbul
-                  </p>
-                </div>
-              </div>
+                <iframe 
+                    src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3048.563914856143!2d29.10309387667817!3d40.17424166948332!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x14ca3f1f8650f0c9%3A0x6b42f6e9f5e27a6!2sBeyaz%C4%B1t%2C%20Kaz%C4%B1m%20%C3%96nad%C4%B1m%20Blv.%20No%3A5%2C%2016260%20Y%C4%B1ld%C4%B1r%C4%B1m%2FBursa!5e0!3m2!1str!2str!4v1727800727103!5m2!1str!2str" 
+                    width="100%" 
+                    height="450" 
+                    style={{ border: 0 }} 
+                    allowFullScreen={false}
+                    loading="lazy" 
+                    referrerPolicy="no-referrer-when-downgrade">
+                </iframe>
             </Card>
           </div>
         </section>
