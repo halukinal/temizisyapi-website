@@ -8,28 +8,29 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Plus, Edit, Trash2, Eye, Calendar, MapPin, ImageIcon, Star } from "lucide-react";
 import { db } from "@/lib/firebase";
-import { collection, getDocs, orderBy, Timestamp } from "firebase/firestore";
 import { Project } from "@/types/project";
 import { deleteProject } from "@/actions/projectActions";
+import { collection, getDocs, orderBy, Timestamp, query } from "firebase/firestore"; // 'query' import edildi.
+
 
 // Mentor Notu: Bu fonksiyon artık bir "async function". Bu, Next.js'in bu bileşeni
 // bir Sunucu Bileşeni olarak ele almasını ve içinde await kullanabilmemizi sağlar.
 // "use client" direktifini kaldırdığımıza dikkat et!
 async function getProjects(): Promise<Project[]> {
   const projectsCollection = collection(db, "projects");
-  const q = orderBy("date", "desc");
-  const projectsSnapshot = await getDocs(collection(db, "projects"));
-  
+  // Sorgu, 'query' fonksiyonu ile doğru şekilde oluşturuldu.
+  const q = query(projectsCollection, orderBy("date", "desc"));
+  const projectsSnapshot = await getDocs(q);
+
   const projects = projectsSnapshot.docs.map(doc => {
     const data = doc.data();
     return {
       id: doc.id,
       ...data,
-      // Firestore'dan gelen Timestamp objesini string'e çeviriyoruz.
       date: (data.date as Timestamp)?.toDate().toLocaleDateString("tr-TR") || 'Tarih Yok',
     } as Project;
   });
-  
+
   return projects;
 }
 

@@ -3,15 +3,17 @@
 import { Header } from "@/components/header";
 import { Footer } from "@/components/footer";
 import { db } from "@/lib/firebase";
-import { collection, getDocs, orderBy, Timestamp } from "firebase/firestore";
 import { Project } from "@/types/project";
 import { GalleryClientContent } from "./gallery-client-content"; // İnteraktif bileşeni birazdan oluşturacağız
+import { collection, getDocs, orderBy, Timestamp, query } from "firebase/firestore"; // 'query' import edildi.
+
 
 // Mentor Notu: Sayfamız artık bir Sunucu Bileşeni. Verileri doğrudan burada,
 // sunucu tarafında çekiyoruz. Bu, SEO için harikadır ve sayfanın ilk yüklenmesini hızlandırır.
 async function getProjects(): Promise<Project[]> {
     const projectsCollection = collection(db, "projects");
-    const q = orderBy("date", "desc");
+    // Sorgu, 'query' fonksiyonu ile doğru şekilde oluşturuldu.
+    const q = query(projectsCollection, orderBy("date", "desc"));
     const projectsSnapshot = await getDocs(q);
 
     return projectsSnapshot.docs.map(doc => {
@@ -19,7 +21,6 @@ async function getProjects(): Promise<Project[]> {
         return {
             id: doc.id,
             ...data,
-            // Firestore Timestamp'i okunabilir bir string'e çeviriyoruz
             date: (data.date as Timestamp)?.toDate().getFullYear().toString() || 'Tarih Yok',
         } as Project;
     });

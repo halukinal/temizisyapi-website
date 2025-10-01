@@ -1,4 +1,5 @@
 // app/admin/dashboard/page.tsx (Yeni ve Tam Hali)
+export const dynamic = 'force-dynamic';
 
 import { AdminLayout } from "@/components/admin/admin-layout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
