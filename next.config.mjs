@@ -13,3 +13,5 @@ const nextConfig = {
 
 export default nextConfig
 // build trigger
+
+import('@opennextjs/cloudflare').then(m => m.initOpenNextCloudflareForDev());
