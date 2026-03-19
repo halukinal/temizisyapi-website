@@ -12,18 +12,19 @@ export const metadata: Metadata = {
   title: "İletişim | Temizişyapı",
   description: "Projeleriniz için ücretsiz keşif ve detaylı teklif almak için bizimle iletişime geçin. Uzman ekibimiz size en uygun çözümleri sunmaya hazır.",
 };
+export const dynamic = 'force-dynamic';
 
 export default function ContactPage() {
   const contactInfo = [
-    [cite_start]{ icon: MapPin, title: "Adres", content: "Beyazıt Mah. Kazımönadım Bulvari No:5 Yıldırım/BURSA" }, [cite: 203]
-    [cite_start]{ icon: Phone, title: "Telefon", content: "0532 388 28 64" }, [cite: 201]
-    [cite_start]{ icon: Mail, title: "E-posta", content: "bulentinal16@gmail.com" }, [cite: 202]
+    { icon: MapPin, title: "Adres", content: "Beyazıt Mah. Kazımönadım Bulvari No:5 Yıldırım/BURSA" },
+    { icon: Phone, title: "Telefon", content: "0532 388 28 64" },
+    { icon: Mail, title: "E-posta", content: "bulentinal16@gmail.com" },
     { icon: Clock, title: "Çalışma Saatleri", content: "Pazartesi - Cumartesi: 09:00 - 19:00\nPazar: Kapalı" },
   ];
 
   const socialLinks = [
-    [cite_start]{ icon: Facebook, name: "Facebook", url: "#" }, [cite: 207]
-    [cite_start]{ icon: Instagram, name: "Instagram", url: "#" }, [cite: 206]
+    { icon: Facebook, name: "Facebook", url: "#" },
+    { icon: Instagram, name: "Instagram", url: "#" },
     { icon: MessageCircle, name: "WhatsApp", url: "https://wa.me/905323882864" }, // WhatsApp linkini ekledim
   ];
 

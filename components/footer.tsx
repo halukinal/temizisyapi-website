@@ -17,18 +17,18 @@ const footerLinks = [
   {
     category: 'Hizmetler',
     links: [
-      { name: 'Cam Balkon', href: '/yaptigimiz-isler' },
-      { name: 'PVC Doğrama', href: '/yaptigimiz-isler' },
-      { name: 'Alüminyum Doğrama', href: '/yaptigimiz-isler' },
-      { name: 'Cephe Sistemleri', href: '/yaptigimiz-isler' },
+      { name: 'Cam Balkon', href: '/yaptigimiz-isler#glass-balcony' },
+      { name: 'Kış Bahçesi', href: '/yaptigimiz-isler#kis-bahcesi' },
+      { name: 'PVC Doğrama', href: '/yaptigimiz-isler#pvc-systems' },
+      { name: 'Alüminyum Doğrama', href: '/yaptigimiz-isler#aluminum-systems' },
     ],
   },
 ];
 
 const socialLinks = [
-  { name: 'Facebook', icon: Facebook, href: '#' },
-  { name: 'Twitter', icon: Twitter, href: '#' },
-  { name: 'Instagram', icon: Instagram, href: '#' },
+  { name: 'Facebook', icon: Facebook, href: 'https://facebook.com/' },
+  { name: 'Twitter', icon: Twitter, href: 'https://twitter.com/' },
+  { name: 'Instagram', icon: Instagram, href: 'https://instagram.com/' },
 ];
 
 export function Footer() {
@@ -89,8 +89,8 @@ export function Footer() {
               </div>
               <div className="flex items-center space-x-3">
                 <Phone className="h-5 w-5 flex-shrink-0" />
-                <a href="tel:+905321234567" className="text-sm hover:text-primary transition-colors">
-                  0532 123 45 67
+                <a href="tel:+905357120918" className="text-sm hover:text-primary transition-colors">
+                  0535 712 09 18
                 </a>
               </div>
               <div className="flex items-center space-x-3">

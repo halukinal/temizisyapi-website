@@ -4,6 +4,7 @@ import { HeroSlider } from "@/components/hero-slider"
 import { AboutSummary } from "@/components/about-summary"
 import { ServicesOverview } from "@/components/services-overview"
 import { References } from "@/components/references"
+import { PriceEstimationModule } from "@/components/price-estimation-module"
 
 export default function HomePage() {
   return (

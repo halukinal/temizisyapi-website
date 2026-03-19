@@ -1,0 +1,47 @@
+version: '3'
+
+services:
+  database:
+    image: postgres:14-alpine
+    restart: always
+    volumes:
+      - directus-data:/var/lib/postgresql/data
+    networks:
+      - directus-network
+    environment:
+      POSTGRES_USER: 'directus'
+      POSTGRES_PASSWORD: 'directus_password'
+      POSTGRES_DB: 'directus'
+
+  directus:
+    image: directus/directus:latest
+    restart: always
+    ports:
+      - 8055:8055
+    volumes:
+      - ./uploads:/directus/uploads
+      - ./extensions:/directus/extensions
+    networks:
+      - directus-network
+    depends_on:
+      - database
+    environment:
+      KEY: 'b3f5c1e5-8f6b-4e6f-8a0b-1b7c8d9e0f1a'
+      SECRET: 'c4e6d2f6-9a7c-5f7g-9b1c-2c8d9e0f1a2b'
+      DB_CLIENT: 'pg'
+      DB_HOST: 'database'
+      DB_PORT: '5432'
+      DB_DATABASE: 'directus'
+      DB_USER: 'directus'
+      DB_PASSWORD: 'directus_password'
+      WEBSOCKETS_ENABLED: 'true'
+      CORS_ENABLED: 'true'
+      CORS_ORIGIN: 'http://localhost:3000'
+      ADMIN_EMAIL: 'admin@temizisyapi.com'
+      ADMIN_PASSWORD: 'admin'
+
+networks:
+  directus-network:
+
+volumes:
+  directus-data:

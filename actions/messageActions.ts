@@ -99,3 +99,6 @@ ${message}
     };
   }
 }
+
+export const createContactMessage = sendContactMessage;
+export const createQuoteRequest = sendContactMessage;

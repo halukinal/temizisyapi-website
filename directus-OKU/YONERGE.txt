@@ -1,0 +1,109 @@
+*******************************************************************************
+TEMİZ İŞ YAPI - DIRECTUS BACKEND KURULUM VE YÖNETİM YÖNERGESİ
+*******************************************************************************
+
+Bu rehber, Docker ile ayağa kaldırdığınız Directus panelinde yapmanız gereken ayarları, açmanız gereken koleksiyonları (tabloları) ve alanları (sütunları) adım adım açıklamaktadır.
+
+-------------------------------------------------------------------------------
+1. Directus Paneline Giriş ve İlk Ayarlar
+-------------------------------------------------------------------------------
+* Docker Compose ile altyapı başlatıldığında siteniz yerel ortamda şu adresten çalışıyor olacak:
+  Adres: http://localhost:8055
+
+* İlk girişte aşağıdaki bilgileri kullanın:
+  E-posta: admin@temizisyapi.com
+  Şifre:   admin
+
+* Girdikten sonra güvenlik için:
+  Sol alt menüden Profilinize (Admin kullanıcısı) girip şifrenizi güvenli bir şifre ile değiştirmeyi unutmayın!
+
+* Dil Ayarları:
+  Sol alttaki ayarlar simgesinden (User Directory -> Admin user -> Language) dilinizi Türkçe (Turkish) yapabilirsiniz.
+
+
+-------------------------------------------------------------------------------
+2. Next.js İle Bağlantı İçin İzinleri (Permissions) Ayarlama
+-------------------------------------------------------------------------------
+Web sitemizin dışarıdan verileri (örneğin blogları ve yaptığımız işleri) çekebilmesi için misafirlerin verileri okuyabilmesine izin vermemiz gerekir.
+- Sol menünün en altındaki 'Ayarlar' (Settings) -> 'Roller ve İzinler' (Roles & Permissions) sayfasına gidin.
+- 'Public' (Herkese Açık) rolüne tıklayın (Gri renkli olan).
+- Burada sayfada sıralanacak koleksiyonlar çıkacak. (Aşağıda ekleyeceğiniz her koleksiyon için sonradan bu alana gelip 'Read / Oku' yetkisini YEŞİL TİK (All Access) yani tümünü okuyabilir yapmanız gerekiyor.)
+- Dosyalar (Directus Files) özel sistem koleksiyonu için de 'Read' / 'Oku' yetkisini açmanız GEREKİR. (Aksi halde resimler websitenizde gözükmez). 'System Collections' alanını açarak `directus_files` için 'Read' sütununa yeşil tik koyun.
+
+
+-------------------------------------------------------------------------------
+3. Oluşturulacak Koleksiyonlar (Veri Tabloları)
+-------------------------------------------------------------------------------
+Aşağıdaki koleksiyonları sol menüdeki "Veri Modeli" (Data Model) veya (Koleksiyon Ayarları) bölümünden "Koleksiyon Oluştur +" (Create Collection) butonuna basarak tek tek oluşturmalısınız.
+
+Senaryonuza uygun eklediğim koleksiyonlar şunlardır:
+
+--- 3.1. SİTE AYARLARI (Singleton) ---
+Bu tablo tek bir satırdan (satır çoğaltılmaz) oluşur. Telefon, logo, sosyal medya linkleri gibi site geneli bilgileri tutar.
+* Name (Koleksiyon Adı): ayarlar
+* Treat as a single object (Tek bir nesne gibi davran): EVET (Bunu tikleyin, çok önemli!)
+Alanları (Fields):
++ title (String / Text Input) -> "Site Başlığı"
++ description (Text / Textarea) -> "Site SEO Açıklaması"
++ phone (String / Text Input) -> "Telefon Numarası"
++ address (String / Text Input) -> "Adres Bilgisi"
++ email (String / Text Input) -> "İletişim E-posta Adresi"
++ facebook (String / Text Input) -> "Facebook Linki"
++ instagram (String / Text Input) -> "Instagram Linki"
++ whatsapp (String / Text Input) -> "Whatsapp Numarası"
++ logo (Image / File) -> "Site Logosu"
+
+--- 3.2. YAPTIĞIMIZ İŞLER (Hizmetler) ---
+Firma tarafından yapılan hizmetleri/işleri listeleyeceğimiz bölüm. (Örn: Cam Balkon, PVC Doğrama)
+* Name: hizmetler
+* Ekstra alanlar (Fields): "Oluşturulma zamanı", "Sıralama (Sort)" ve "Durum (Status)" kutucuklarını da tikli bırakıp oluşturun.
+Alanları:
++ title (String / Text Input) -> "Hizmet Adı" (Örn: PVC Doğrama)
++ slug (String / Input) -> "URL Sef Link" (Bu alana özellik (Interface) kısmında 'Slug' seçebilirsiniz, title alanından türetilir)
++ image (Image / File) -> "Hizmet Görseli"
++ summary (Text / Textarea) -> "Kısa Açıklama (Ana sayfada veya kartlarda görünecek)"
++ content (Text / WYSIWYG) -> "Detaylı İçerik (Zengin metin editörü)"
+
+--- 3.3. BLOG (Haberler & Yazılar) ---
+Firmanız hakkında güncel yazılar, sektörel blog yazıları.
+* Name: blog
+* Ekstra alanlar: "Oluşturulma zamanı", "Durum (Status)" kutucuklarını tikleyin.
+Alanları:
++ title (String / Text Input) -> "Blog Başlığı"
++ slug (String / Input) -> "URL" (Yine Slug özelliği ile)
++ image (Image / File) -> "Kapak Görseli"
++ excerpt (Text / Textarea) -> "Kısa Özet"
++ content (Text / WYSIWYG) -> "İçerik Tamamı"
++ date_published (Datetime) -> "Yayınlanma Tarihi"
+
+--- 3.4. MÜŞTERİ REFERANSLARI / İŞ ORTAKLARI (İsteğe Bağlı) ---
+Websitenizde "Çalıştığımız Markalar" veya Referansları listelemek isterseniz yapın.
+* Name: referanslar
+* Ekstra alanlar: "Sıralama (Sort)", "Durum (Status)"
+Alanları:
++ name (String / Text Input) -> "Firma / Müşteri Adı"
++ logo (Image / File) -> "Firma Logosu"
++ website_url (String / Text Input) -> "Firma Websitesinin Linki"
+
+--- 3.5. SLIDER (Ana Sayfa Görüntüleri) ---
+Ana sayfada en tepede geçen kayan fotoğraflar ve yazılar.
+* Name: slider
+* Ekstra alanlar: "Sıralama (Sort)", "Durum (Status)"
+Alanları:
++ title (String / Text Input) -> "Ana Başlık"
++ subtitle (String / Text Input) -> "Alt Başlık"
++ image (Image / File) -> "Arka Plan Görseli" (Çözünürlüğü yüksek yatay görsel)
++ button_text (String / Text Input) -> "Buton Yazısı"
++ button_link (String / Text Input) -> "Buton Linki" (Yönleneceği URL)
+
+
+-------------------------------------------------------------------------------
+4. İÇERİKLERİ EKLEME
+-------------------------------------------------------------------------------
+1. Veri modelini bitirdikten ve İzinleri (Public okuma yetkisi) verdikten sonra.
+2. Sol menüden 'İçerikler' (Content) kısmına gelin.
+3. Önce "ayarlar" bölümüne girip tüm firma bilgilerinizi kaydedin.
+4. Sonra "hizmetler", "blog" ve "slider" bölümlerine örnek 2-3 er veri ekleyerek sistemi doldurun.
+
+Tebrikler, arka plan sisteminizi hazır hale getirdiniz! Artık web siteniz bu verileri dinamik olarak okumaya hazır.
+Mevcut kodlamada Next.js dosyalarına "lib/directus.ts" entegre edildi. Projeyi geliştirerek tasarımlara verileri bağlayabiliriz.

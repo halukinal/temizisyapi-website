@@ -1,147 +1,210 @@
-// app/iletisim/contact-forms.tsx
-'use client';
+"use client"
 
-import { useFormState, useFormStatus } from "react-dom";
-import { createContactMessage, createQuoteRequest } from "@/actions/messageActions";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
-import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Checkbox } from "@/components/ui/checkbox";
-import { Badge } from "@/components/ui/badge";
-import { Send, Calculator } from "lucide-react";
-import { useEffect, useRef } from "react";
-import { useToast } from "@/components/ui/use-toast";
+import { useState } from "react"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
+import { Textarea } from "@/components/ui/textarea"
+import { Label } from "@/components/ui/label"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { Checkbox } from "@/components/ui/checkbox"
+import { Send, Calculator, MessageSquare } from "lucide-react"
 
-function SubmitButton({ icon: Icon, pendingText, text }: { icon: React.ElementType, pendingText: string, text: string }) {
-  const { pending } = useFormStatus();
-  return (
-    <Button type="submit" disabled={pending} className="w-full bg-primary hover:bg-primary/90">
-      {pending ? pendingText : text}
-      <Icon className="ml-2 h-4 w-4" />
-    </Button>
-  );
-}
-
-const initialState = { message: "", errors: {} };
+const WHATSAPP_NUMBER = "905357120918" // İşletme WhatsApp numarası
 
 export function ContactForms() {
-  const { toast } = useToast();
-  const contactFormRef = useRef<HTMLFormElement>(null);
-  const quoteFormRef = useRef<HTMLFormElement>(null);
+  // İletişim Formu State
+  const [contactForm, setContactForm] = useState({
+    name: "",
+    phone: "",
+    email: "",
+    subject: "",
+    message: "",
+  })
 
-  const [contactState, contactFormAction] = useFormState(createContactMessage, initialState);
-  const [quoteState, quoteFormAction] = useFormState(createQuoteRequest, initialState);
+  // Teklif Formu State
+  const [quoteForm, setQuoteForm] = useState({
+    name: "",
+    phone: "",
+    email: "",
+    service: "",
+    projectType: "",
+    description: "",
+    consent: false,
+  })
 
-  useEffect(() => {
-    if (contactState.message) {
-      toast({
-        title: contactState.errors && Object.keys(contactState.errors).length > 0 ? 'Hata!' : 'Başarılı!',
-        description: contactState.message,
-        variant: contactState.errors && Object.keys(contactState.errors).length > 0 ? 'destructive' : 'default',
-      });
-      if (!contactState.errors || Object.keys(contactState.errors).length === 0) {
-        contactFormRef.current?.reset();
-      }
+  const handleContactSubmit = (e: React.FormEvent) => {
+    e.preventDefault()
+    
+    const message = `*Yeni İletişim Mesajı* 📧\n\n` +
+      `*Ad Soyad:* ${contactForm.name}\n` +
+      `*Telefon:* ${contactForm.phone || "Belirtilmedi"}\n` +
+      `*E-posta:* ${contactForm.email}\n` +
+      `*Konu:* ${contactForm.subject || "Genel"}\n\n` +
+      `*Mesaj:* ${contactForm.message}`
+
+    const encodedMessage = encodeURIComponent(message)
+    window.open(`https://wa.me/${WHATSAPP_NUMBER}?text=${encodedMessage}`, "_blank")
+  }
+
+  const handleQuoteSubmit = (e: React.FormEvent) => {
+    e.preventDefault()
+    
+    const services: Record<string, string> = {
+      pvc: "PVC Kapı Pencere",
+      aluminum: "Alüminyum Doğrama",
+      "glass-balcony": "Cam Balkon",
+      facade: "Cephe Sistemleri",
+      multiple: "Birden Fazla Hizmet",
     }
-  }, [contactState, toast]);
+    const serviceName = services[quoteForm.service] || quoteForm.service
 
-  useEffect(() => {
-    if (quoteState.message) {
-      toast({
-        title: quoteState.errors && Object.keys(quoteState.errors).length > 0 ? 'Hata!' : 'Başarılı!',
-        description: quoteState.message,
-        variant: quoteState.errors && Object.keys(quoteState.errors).length > 0 ? 'destructive' : 'default',
-      });
-      if (!quoteState.errors || Object.keys(quoteState.errors).length === 0) {
-        quoteFormRef.current?.reset();
-      }
+    const types: Record<string, string> = {
+      residential: "Konut",
+      commercial: "Ticari",
+      industrial: "Endüstriyel",
+      renovation: "Tadilat",
     }
-  }, [quoteState, toast]);
+    const typeName = types[quoteForm.projectType] || "Belirtilmedi"
+
+    const message = `*Yeni Teklif Talebi* 📝\n\n` +
+      `*Ad Soyad:* ${quoteForm.name}\n` +
+      `*Telefon:* ${quoteForm.phone}\n` +
+      `*E-posta:* ${quoteForm.email}\n` +
+      `*Hizmet:* ${serviceName}\n` +
+      `*Proje Türü:* ${typeName}\n\n` +
+      `*Detaylar:* ${quoteForm.description}`
+
+    const encodedMessage = encodeURIComponent(message)
+    window.open(`https://wa.me/${WHATSAPP_NUMBER}?text=${encodedMessage}`, "_blank")
+  }
 
   return (
     <section className="py-16 bg-muted/30">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
           {/* Contact Form */}
-          <Card>
+          <Card className="border-0 shadow-lg">
             <CardHeader>
               <CardTitle className="font-serif text-2xl flex items-center space-x-2">
                 <Send className="h-6 w-6 text-primary" />
                 <span>İletişim Formu</span>
               </CardTitle>
               <p className="text-muted-foreground">
-                Genel sorularınız için bu formu kullanabilirsiniz. Size en kısa sürede dönüş yapacağız.
+                Genel sorularınız için bu formu kullanabilirsiniz.
               </p>
             </CardHeader>
             <CardContent>
-              <form ref={contactFormRef} action={contactFormAction} className="space-y-4">
+              <form onSubmit={handleContactSubmit} className="space-y-4">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div className="space-y-2">
                     <Label htmlFor="contact-name">Ad Soyad *</Label>
-                    <Input id="contact-name" name="name" required placeholder="Adınız ve soyadınız" />
-                    {contactState.errors?.name && <p className="text-sm text-destructive">{contactState.errors.name[0]}</p>}
+                    <Input 
+                      id="contact-name" 
+                      required 
+                      placeholder="Adınız ve soyadınız" 
+                      value={contactForm.name}
+                      onChange={(e) => setContactForm({...contactForm, name: e.target.value})}
+                    />
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="contact-phone">Telefon</Label>
-                    <Input id="contact-phone" name="phone" type="tel" placeholder="0532 555 0123" />
+                    <Input 
+                      id="contact-phone" 
+                      type="tel" 
+                      placeholder="0532 555 0123" 
+                      value={contactForm.phone}
+                      onChange={(e) => setContactForm({...contactForm, phone: e.target.value})}
+                    />
                   </div>
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="contact-email">E-posta *</Label>
-                  <Input id="contact-email" name="email" type="email" required placeholder="ornek@email.com" />
-                  {contactState.errors?.email && <p className="text-sm text-destructive">{contactState.errors.email[0]}</p>}
+                  <Input 
+                    id="contact-email" 
+                    type="email" 
+                    required 
+                    placeholder="ornek@email.com" 
+                    value={contactForm.email}
+                    onChange={(e) => setContactForm({...contactForm, email: e.target.value})}
+                  />
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="contact-subject">Konu</Label>
-                  <Input id="contact-subject" name="subject" placeholder="Mesajınızın konusu" />
+                  <Input 
+                    id="contact-subject" 
+                    placeholder="Mesajınızın konusu" 
+                    value={contactForm.subject}
+                    onChange={(e) => setContactForm({...contactForm, subject: e.target.value})}
+                  />
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="contact-message">Mesaj *</Label>
-                  <Textarea id="contact-message" name="message" required placeholder="Mesajınızı buraya yazın..." rows={4} />
-                  {contactState.errors?.message && <p className="text-sm text-destructive">{contactState.errors.message[0]}</p>}
+                  <Textarea 
+                    id="contact-message" 
+                    required 
+                    placeholder="Mesajınızı buraya yazın..." 
+                    rows={4} 
+                    value={contactForm.message}
+                    onChange={(e) => setContactForm({...contactForm, message: e.target.value})}
+                  />
                 </div>
-                <SubmitButton text="Mesaj Gönder" pendingText="Gönderiliyor..." icon={Send} />
+                <Button type="submit" className="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-6 text-lg rounded-xl shadow-lg transition-all hover:scale-[1.02]">
+                  WhatsApp ile Gönder
+                  <MessageSquare className="ml-2 h-5 w-5" />
+                </Button>
               </form>
             </CardContent>
           </Card>
 
           {/* Quote Request Form */}
-          <Card>
+          <Card className="border-0 shadow-lg">
             <CardHeader>
               <CardTitle className="font-serif text-2xl flex items-center space-x-2">
                 <Calculator className="h-6 w-6 text-primary" />
                 <span>Teklif Talep Formu</span>
               </CardTitle>
               <p className="text-muted-foreground">
-                Projeniz için detaylı teklif almak istiyorsanız bu formu doldurun. Ücretsiz keşif hizmeti sunuyoruz.
+                Projeniz için detaylı teklif almak ve ücretsiz keşif için formu doldurun.
               </p>
             </CardHeader>
             <CardContent>
-              <form ref={quoteFormRef} action={quoteFormAction} className="space-y-4">
+              <form onSubmit={handleQuoteSubmit} className="space-y-4">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div className="space-y-2">
                     <Label htmlFor="quote-name">Ad Soyad *</Label>
-                    <Input id="quote-name" name="name" required />
-                    {quoteState.errors?.name && <p className="text-sm text-destructive">{quoteState.errors.name[0]}</p>}
+                    <Input 
+                      id="quote-name" 
+                      required 
+                      value={quoteForm.name}
+                      onChange={(e) => setQuoteForm({...quoteForm, name: e.target.value})}
+                    />
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="quote-phone">Telefon *</Label>
-                    <Input id="quote-phone" name="phone" type="tel" required />
-                    {quoteState.errors?.phone && <p className="text-sm text-destructive">{quoteState.errors.phone[0]}</p>}
+                    <Input 
+                      id="quote-phone" 
+                      type="tel" 
+                      required 
+                      value={quoteForm.phone}
+                      onChange={(e) => setQuoteForm({...quoteForm, phone: e.target.value})}
+                    />
                   </div>
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="quote-email">E-posta *</Label>
-                  <Input id="quote-email" name="email" type="email" required />
-                  {quoteState.errors?.email && <p className="text-sm text-destructive">{quoteState.errors.email[0]}</p>}
+                  <Input 
+                    id="quote-email" 
+                    type="email" 
+                    required 
+                    value={quoteForm.email}
+                    onChange={(e) => setQuoteForm({...quoteForm, email: e.target.value})}
+                  />
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div className="space-y-2">
                     <Label htmlFor="quote-service">Hizmet Türü *</Label>
-                    <Select name="service" required>
+                    <Select onValueChange={(val) => setQuoteForm({...quoteForm, service: val})} required>
                       <SelectTrigger><SelectValue placeholder="Hizmet seçin" /></SelectTrigger>
                       <SelectContent>
                         <SelectItem value="pvc">PVC Kapı Pencere</SelectItem>
@@ -151,11 +214,10 @@ export function ContactForms() {
                         <SelectItem value="multiple">Birden Fazla Hizmet</SelectItem>
                       </SelectContent>
                     </Select>
-                    {quoteState.errors?.service && <p className="text-sm text-destructive">{quoteState.errors.service[0]}</p>}
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="quote-project-type">Proje Türü</Label>
-                    <Select name="projectType">
+                    <Select onValueChange={(val) => setQuoteForm({...quoteForm, projectType: val})}>
                       <SelectTrigger><SelectValue placeholder="Proje türü seçin" /></SelectTrigger>
                       <SelectContent>
                         <SelectItem value="residential">Konut</SelectItem>
@@ -168,22 +230,35 @@ export function ContactForms() {
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="quote-description">Proje Detayları *</Label>
-                  <Textarea id="quote-description" name="description" placeholder="Metrekare, kat sayısı, özel istekler vb." rows={4} required />
-                  {quoteState.errors?.description && <p className="text-sm text-destructive">{quoteState.errors.description[0]}</p>}
+                  <Textarea 
+                    id="quote-description" 
+                    placeholder="Metrekare, kat sayısı, özel istekler vb." 
+                    rows={4} 
+                    required 
+                    value={quoteForm.description}
+                    onChange={(e) => setQuoteForm({...quoteForm, description: e.target.value})}
+                  />
                 </div>
                 <div className="flex items-center space-x-2">
-                  <Checkbox id="consent" name="consent" required />
+                  <Checkbox 
+                    id="consent" 
+                    required 
+                    checked={quoteForm.consent}
+                    onCheckedChange={(checked) => setQuoteForm({...quoteForm, consent: checked === true})}
+                  />
                   <Label htmlFor="consent" className="text-sm text-muted-foreground">
-                    Kişisel verilerimin işlenmesine ve iletişim kurulmasına onay veriyorum. *
+                    Kişisel verilerimin işlenmesine onay veriyorum. *
                   </Label>
                 </div>
-                {quoteState.errors?.consent && <p className="text-sm text-destructive">{quoteState.errors.consent[0]}</p>}
-                <SubmitButton text="Teklif Talep Et" pendingText="Gönderiliyor..." icon={Calculator} />
+                <Button type="submit" className="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-6 text-lg rounded-xl shadow-lg transition-all hover:scale-[1.02]">
+                  Teklifi WhatsApp ile Gönder
+                  <MessageSquare className="ml-2 h-5 w-5" />
+                </Button>
               </form>
             </CardContent>
           </Card>
         </div>
       </div>
     </section>
-  );
+  )
 }
