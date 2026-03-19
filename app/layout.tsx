@@ -21,10 +21,29 @@ const sourceSansPro = Source_Sans_3({
 })
 
 export const metadata: Metadata = {
-  title: "Temizişyapı - Alüminyum, Cam ve PVC Çözümleri",
+  metadataBase: new URL('https://www.temizisyapi.com'),
+  title: {
+    default: "Temizişyapı | Bursa Alüminyum Doğrama, Cam Balkon ve PVC",
+    template: "%s | Temizişyapı Bursa"
+  },
   description:
-    "Profesyonel alüminyum doğrama, cam balkon ve PVC kapı pencere sistemleri. 20 yıllık tecrübe ile kaliteli çözümler.",
-  generator: "v0.app",
+    "Bursa, Nilüfer ve Yıldırım başta olmak üzere tüm Marmara bölgesine profesyonel alüminyum doğrama, cam balkon ve PVC kapı pencere sistemleri hizmeti sunan 20 yıllık köklü firma.",
+  keywords: ["Bursa Cam Balkon", "Bursa Alüminyum Doğrama", "Bursa PVC Pencere", "Yıldırım Cam Balkon", "Nilüfer PVC", "Temizişyapı"],
+  authors: [{ name: "Haluk İnal" }],
+  generator: "Haluk İnal",
+  openGraph: {
+    title: "Temizişyapı | Bursa Alüminyum, Cam Balkon ve PVC Sistemleri",
+    description: "Profesyonel alüminyum doğrama, cam balkon ve PVC kapı pencere sistemleri. 20 yıllık tecrübe ile Bursa merkezli imalat ve montaj hizmetleri.",
+    url: "https://www.temizisyapi.com",
+    siteName: "Temizişyapı",
+    locale: "tr_TR",
+    type: "website",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Temizişyapı | Bursa Alüminyum ve Cam Balkon Sistemleri",
+    description: "20 yıllık tecrübe ile Bursa'nın en güvenilir alüminyum, cam balkon ve PVC çözüm ortağı.",
+  },
 }
 
 export default function RootLayout({

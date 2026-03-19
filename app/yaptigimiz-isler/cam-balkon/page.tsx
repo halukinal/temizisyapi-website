@@ -4,6 +4,12 @@ import { PriceEstimationModule } from "@/components/price-estimation-module"
 import { Button } from "@/components/ui/button"
 import { ShieldCheck, Snowflake, Sun, VolumeX, Sparkles, ArrowRight } from "lucide-react"
 import Link from "next/link"
+import type { Metadata } from "next"
+
+export const metadata: Metadata = {
+  title: "Cam Balkon Sistemleri | Temizişyapı Bursa",
+  description: "Bursa cam balkon fiyatları ve modelleri. Balkonunuzu dört mevsim kullanıma uygun hale getiren katlanır ve sürme cam balkon sistemleri.",
+}
 
 export default function CamBalkonPage() {
   return (

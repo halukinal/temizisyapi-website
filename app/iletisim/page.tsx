@@ -9,14 +9,14 @@ import { ContactForms } from "./contact-forms"; // Yeni oluşturduğumuz istemci
 
 // SEO Bilgileri artık burada, olması gerektiği yerde.
 export const metadata: Metadata = {
-  title: "İletişim | Temizişyapı",
-  description: "Projeleriniz için ücretsiz keşif ve detaylı teklif almak için bizimle iletişime geçin. Uzman ekibimiz size en uygun çözümleri sunmaya hazır.",
+  title: "İletişim | Temizişyapı Bursa",
+  description: "Bursa Yıldırım, Nilüfer ve çevresi için projelerinize ücretsiz keşif ve detaylı fiyat teklifi almak için bizimle iletişime geçin.",
 };
 export const dynamic = 'force-dynamic';
 
 export default function ContactPage() {
   const contactInfo = [
-    { icon: MapPin, title: "Adres", content: "Beyazıt Mah. Kazımönadım Bulvari No:5 Yıldırım/BURSA" },
+    { icon: MapPin, title: "Adres", content: "Beyazıt, Eğitim Cd. no:188, 16320 Yıldırım/Bursa\n(54P2+9C Yıldırım, Bursa)" },
     { icon: Phone, title: "Telefon", content: "0532 388 28 64" },
     { icon: Mail, title: "E-posta", content: "bulentinal16@gmail.com" },
     { icon: Clock, title: "Çalışma Saatleri", content: "Pazartesi - Cumartesi: 09:00 - 19:00\nPazar: Kapalı" },
@@ -87,7 +87,7 @@ export default function ContactPage() {
             </div>
             <Card className="overflow-hidden">
                 <iframe 
-                    src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3048.563914856143!2d29.10309387667817!3d40.17424166948332!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x14ca3f1f8650f0c9%3A0x6b42f6e9f5e27a6!2sBeyaz%C4%B1t%2C%20Kaz%C4%B1m%20%C3%96nad%C4%B1m%20Blv.%20No%3A5%2C%2016260%20Y%C4%B1ld%C4%B1r%C4%B1m%2FBursa!5e0!3m2!1str!2str!4v1727800727103!5m2!1str!2str" 
+                    src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3048.036921351636!2d29.09848137612592!3d40.185991769650435!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x14ca3e87b4c04349%3A0x8b26aece7caf6333!2zVEVNxLBaIMSwxZ4gWUFQSQ!5e0!3m2!1str!2str!4v1773908331778!5m2!1str!2str" 
                     width="100%" 
                     height="450" 
                     style={{ border: 0 }} 

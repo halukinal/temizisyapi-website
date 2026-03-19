@@ -160,6 +160,9 @@ export function Chatbot() {
                 {isLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
               </Button>
             </form>
+            <p className="text-[10px] text-muted-foreground text-center mt-1">
+              Konuşmalar kalite ve hizmet standartları gereği kayıt altına alınmaktadır.
+            </p>
           </CardFooter>
         </Card>
       )}

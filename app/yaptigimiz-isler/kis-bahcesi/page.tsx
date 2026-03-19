@@ -3,6 +3,12 @@ import { Footer } from "@/components/footer"
 import { Button } from "@/components/ui/button"
 import { Coffee, Trees, Sun, Snowflake, ArrowRight } from "lucide-react"
 import Link from "next/link"
+import type { Metadata } from "next"
+
+export const metadata: Metadata = {
+  title: "Kış Bahçesi Sistemleri | Temizişyapı Bursa",
+  description: "Bursa kış bahçesi fiyatları ve projeleri. Dört mevsim doğayla iç içe kalabileceğiniz yalıtımlı şık ve dayanıklı alüminyum kış bahçeleri.",
+}
 
 export default function KisBahcesiPage() {
   return (

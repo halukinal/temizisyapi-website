@@ -258,6 +258,9 @@ export function PriceEstimationModule() {
                     Yeniden Hesapla
                   </Button>
                 </div>
+                <p className="text-[10px] text-muted-foreground text-center mt-2">
+                  Hesaplama detayları ve seans verileri hizmet kalitesi analizi için kayıt altına alınmaktadır.
+                </p>
               </div>
             </CardContent>
           </>

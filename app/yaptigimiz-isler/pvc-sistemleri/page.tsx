@@ -3,6 +3,12 @@ import { Footer } from "@/components/footer"
 import { Button } from "@/components/ui/button"
 import { ShieldCheck, ArrowRight, Zap, Droplets, Volume2, ThermometerSun } from "lucide-react"
 import Link from "next/link"
+import type { Metadata } from "next"
+
+export const metadata: Metadata = {
+  title: "PVC Pencere ve Kapı Sistemleri | Temizişyapı Bursa",
+  description: "Bursa PVC pencere, Nilüfer ve Yıldırım bölgelerine en uygun fiyatlarla yüksek yalıtımlı PVC kapı ve pencere sistemleri imalat ve montajı.",
+}
 
 export default function PvcSistemleriPage() {
   return (

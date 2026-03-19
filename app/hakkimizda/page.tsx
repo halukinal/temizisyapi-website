@@ -9,8 +9,8 @@ import type { Metadata } from "next";
 
 // SEO Bilgileri
 export const metadata: Metadata = {
-  title: "Hakkımızda | Temiz İş Yapı",
-  description: "1976'dan bugüne 48 yıllık deneyimle inşaat ve yapı sektöründe kaliteli işçilik, estetik tasarımlar ve müşteri odaklı yaklaşım sunuyoruz.",
+  title: "Hakkımızda | Temizişyapı Bursa",
+  description: "Bursa Yıldırım merkezli Temizişyapı olarak 1976'dan bugüne 48 yıllık deneyimle alüminyum, cam balkon ve PVC sektöründe kaliteli işçilik sunuyoruz.",
 };
 
 export default function AboutPage() {

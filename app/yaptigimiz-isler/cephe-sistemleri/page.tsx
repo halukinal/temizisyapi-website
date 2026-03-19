@@ -3,6 +3,12 @@ import { Footer } from "@/components/footer"
 import { Button } from "@/components/ui/button"
 import { Factory, TrendingUp, Presentation, ShieldPlus } from "lucide-react"
 import Link from "next/link"
+import type { Metadata } from "next"
+
+export const metadata: Metadata = {
+  title: "Alüminyum Cephe Sistemleri | Temizişyapı Bursa",
+  description: "Bursa alüminyum dış cephe kaplama, silikon ve kompozit panel cephe sistemleri. Estetik ve dayanıklı dış cephe çözümleri.",
+}
 
 export default function CepheSistemleriPage() {
   return (

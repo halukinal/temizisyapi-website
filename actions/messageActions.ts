@@ -6,6 +6,7 @@ import { z } from "zod";
 import { db } from "@/lib/firebase";
 import { collection, addDoc, serverTimestamp } from "firebase/firestore";
 import twilio from "twilio";
+import { headers } from "next/headers";
 
 const client = twilio(
   process.env.TWILIO_ACCOUNT_SID,
@@ -31,10 +32,38 @@ export interface FormState {
   };
 }
 
+// IP tabanlı spam koruması (Form gönderimleri için)
+const formIpLimits = new Map<string, { count: number; lastRequest: number }>();
+const MAX_FORM_PER_MINUTE = 2; // Bir kişi dakikada en fazla 2 form gönderebilir
+
 export async function sendContactMessage(
   prevState: FormState,
   formData: FormData
 ): Promise<FormState> {
+  // SPAM KORUMASI DEVREDE
+  const ip = headers().get("x-forwarded-for") || "unknown_ip";
+  const now = Date.now();
+  const ipData = formIpLimits.get(ip);
+
+  if (ipData) {
+    if (now - ipData.lastRequest > 60000) {
+      // 1 dakika geçmiş, sayacı sıfırla
+      formIpLimits.set(ip, { count: 1, lastRequest: now });
+    } else {
+      if (ipData.count >= MAX_FORM_PER_MINUTE) {
+        console.warn(`Spam Engellendi: ${ip} adlı kullanıcı çok fazla form gönderdi.`);
+        return {
+          success: false,
+          message: "Çok fazla deneme yaptınız. Lütfen 1 dakika bekleyip tekrar deneyin.",
+        };
+      }
+      ipData.count++;
+      ipData.lastRequest = now;
+    }
+  } else {
+    formIpLimits.set(ip, { count: 1, lastRequest: now });
+  }
+
   const validatedFields = messageSchema.safeParse({
     name: formData.get("name"),
     email: formData.get("email"),

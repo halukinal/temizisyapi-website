@@ -3,6 +3,12 @@ import { Footer } from "@/components/footer"
 import { Button } from "@/components/ui/button"
 import { BoxSelect, Infinity, Leaf, Droplets, PaintRoller, MapPin } from "lucide-react"
 import Link from "next/link"
+import type { Metadata } from "next"
+
+export const metadata: Metadata = {
+  title: "Alüminyum Doğrama Sistemleri | Temizişyapı Bursa",
+  description: "Bursa alüminyum doğrama, pencere ve kapı sistemleri imalatı. Yüksek kaliteli, uzun ömürlü ve modern alüminyum çözümler.",
+}
 
 export default function AluminyumSistemleriPage() {
   return (

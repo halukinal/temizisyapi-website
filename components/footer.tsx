@@ -104,7 +104,7 @@ export function Footer() {
         </div>
 
         <div className="mt-12 pt-8 border-t border-border/50 text-center text-xs">
-          <p>&copy; {new Date().getFullYear()} Temizişyapı. Tüm hakları saklıdır.</p>
+          <p>&copy; {new Date().getFullYear()} Temizişyapı. Tüm hakları saklıdır. Haluk İnal tarafından hazırlanmıştır.</p>
         </div>
       </div>
     </footer>

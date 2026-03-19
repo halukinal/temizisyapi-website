@@ -4,6 +4,12 @@ import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { CheckCircle, ArrowRight, Activity, Zap, ShieldCheck, Wrench, Shield, Droplets } from "lucide-react"
 import Link from "next/link"
+import type { Metadata } from "next"
+
+export const metadata: Metadata = {
+  title: "Yaptığımız İşler ve Hizmetler | Temizişyapı Bursa",
+  description: "Bursa ve çevre illerde tamamladığımız cam balkon, alüminyum doğrama, PVC pencere ve kış bahçesi projelerimiz. Uzman ekibimizin kaliteli işçiliğine göz atın.",
+}
 
 export default function ServicesPage() {
   const services = [

@@ -2,6 +2,8 @@
 
 import { GoogleGenAI } from "@google/genai"
 import { headers } from "next/headers"
+import { db } from "@/lib/firebase"
+import { collection, addDoc, serverTimestamp } from "firebase/firestore"
 
 interface ChatMessage {
   role: "user" | "model"
@@ -99,9 +101,24 @@ YANIT VERİRKEN ŞU KURALLARA KESİNLİKLE UY:
 // Sohbet bittiğinde, tüm konuşma geçmişini WhatsApp mesajı formatında özetleyen fonksiyon
 export async function generateWhatsAppSummary(history: ChatMessage[]): Promise<string> {
   try {
-    const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY })
-    
     const historyText = history.map(msg => `${msg.role === 'user' ? 'Müşteri' : 'Asistan'}: ${msg.content}`).join('\n')
+    
+    // Konuşma geçmişini buluta (Firebase) yedekle/kaydet
+    try {
+      await addDoc(collection(db, "chat_transcripts"), {
+        type: 'chatbot_conversation',
+        transcript: historyText,
+        date: serverTimestamp(),
+        source: 'whatsapp_redirect',
+        read: false
+      });
+      console.log("Chat transcript saved to Firebase.")
+    } catch (dbError) {
+      console.error("Firebase Database Yükleme Hatası (Chat):", dbError)
+      // Veritabanı hatası olsa bile WhatsApp akışını bozmamak için fırlatmıyoruz
+    }
+
+    const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY })
     
     const prompt = `Aşağıda bir müşteri ile sanal asistanımız arasında geçen konuşma geçmişi bulunmaktadır.
 Müşteri şu anda WhatsApp iletişime geç butonuna bastı ve müşterinin telefonunda otomatik gönderilmek üzere hazır bir "İlk Mesaj" oluşturmamız gerekiyor.

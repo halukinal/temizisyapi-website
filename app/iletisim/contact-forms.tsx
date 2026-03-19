@@ -153,6 +153,9 @@ export function ContactForms() {
                   WhatsApp ile Gönder
                   <MessageSquare className="ml-2 h-5 w-5" />
                 </Button>
+                <p className="text-[10px] text-muted-foreground text-center mt-2">
+                  Form üzerinden iletilen bilgiler ve yazışmalar hizmet kalitesi gereği kayıt altına alınmaktadır.
+                </p>
               </form>
             </CardContent>
           </Card>
@@ -254,6 +257,9 @@ export function ContactForms() {
                   Teklifi WhatsApp ile Gönder
                   <MessageSquare className="ml-2 h-5 w-5" />
                 </Button>
+                <p className="text-[10px] text-muted-foreground text-center mt-2">
+                  Teklif talebiniz ve paylaştığınız veriler hizmet standartlarımız gereği güvenle saklanmaktadır.
+                </p>
               </form>
             </CardContent>
           </Card>
