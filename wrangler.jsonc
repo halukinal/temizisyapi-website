@@ -10,8 +10,9 @@
 	"pages_build_output_dir": ".next",
 	"assets": {
 		"directory": ".open-next/assets",
-		"binding": "ASSETS"
+		"binding": "NEXT_ASSETS"
 	},
+
 	"services": [
 		{
 			// Self-reference service binding, the service name must match the worker name
