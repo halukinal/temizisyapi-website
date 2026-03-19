@@ -6,25 +6,37 @@ import { db } from "@/lib/firebase";
 import { Project } from "@/types/project";
 import { GalleryClientContent } from "./gallery-client-content"; // İnteraktif bileşeni birazdan oluşturacağız
 import { collection, getDocs, orderBy, Timestamp, query } from "firebase/firestore"; // 'query' import edildi.
+export const dynamic = "force-dynamic";
+
 
 
 // Mentor Notu: Sayfamız artık bir Sunucu Bileşeni. Verileri doğrudan burada,
 // sunucu tarafında çekiyoruz. Bu, SEO için harikadır ve sayfanın ilk yüklenmesini hızlandırır.
 async function getProjects(): Promise<Project[]> {
-    const projectsCollection = collection(db, "projects");
-    // Sorgu, 'query' fonksiyonu ile doğru şekilde oluşturuldu.
-    const q = query(projectsCollection, orderBy("date", "desc"));
-    const projectsSnapshot = await getDocs(q);
+    try {
+        if (!db) {
+            console.warn("Firestore database instance (db) is not initialized.");
+            return [];
+        }
+        const projectsCollection = collection(db, "projects");
+        // Sorgu, 'query' fonksiyonu ile doğru şekilde oluşturuldu.
+        const q = query(projectsCollection, orderBy("date", "desc"));
+        const projectsSnapshot = await getDocs(q);
 
-    return projectsSnapshot.docs.map(doc => {
-        const data = doc.data();
-        return {
-            id: doc.id,
-            ...data,
-            date: (data.date as Timestamp)?.toDate() || new Date(),
-        } as Project;
-    });
+        return projectsSnapshot.docs.map(doc => {
+            const data = doc.data();
+            return {
+                id: doc.id,
+                ...data,
+                date: (data.date as Timestamp)?.toDate() || new Date(),
+            } as Project;
+        });
+    } catch (error) {
+        console.error("Error fetching projects from Firebase:", error);
+        return [];
+    }
 }
+
 
 export default async function GalleryPage() {
     // Veriyi sunucuda çek

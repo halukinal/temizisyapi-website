@@ -3,6 +3,8 @@
 import { Suspense } from "react";
 import Link from "next/link";
 import { AdminLayout } from "@/components/admin/admin-layout";
+export const dynamic = "force-dynamic";
+
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -17,22 +19,32 @@ import { collection, getDocs, orderBy, Timestamp, query } from "firebase/firesto
 // bir Sunucu Bileşeni olarak ele almasını ve içinde await kullanabilmemizi sağlar.
 // "use client" direktifini kaldırdığımıza dikkat et!
 async function getProjects(): Promise<Project[]> {
-  const projectsCollection = collection(db, "projects");
-  // Sorgu, 'query' fonksiyonu ile doğru şekilde oluşturuldu.
-  const q = query(projectsCollection, orderBy("date", "desc"));
-  const projectsSnapshot = await getDocs(q);
+  try {
+    // Mentor Notu: Eğer Firebase yapılandırması eksikse veya db oluşmamışsa,
+    // hata vermemesi için boş liste döndürüyoruz. Bu, build sürecinin geçmesini sağlar.
+    if (!db) {
+      console.warn("Firestore database instance (db) is not initialized.");
+      return [];
+    }
 
-  const projects = projectsSnapshot.docs.map(doc => {
-    const data = doc.data();
-    return {
-      id: doc.id,
-      ...data,
-      date: (data.date as Timestamp)?.toDate() || new Date(),
-    } as Project;
-  });
+    const projectsCollection = collection(db, "projects");
+    const q = query(projectsCollection, orderBy("date", "desc"));
+    const projectsSnapshot = await getDocs(q);
 
-  return projects;
+    return projectsSnapshot.docs.map(doc => {
+      const data = doc.data();
+      return {
+        id: doc.id,
+        ...data,
+        date: (data.date as Timestamp)?.toDate() || new Date(),
+      } as Project;
+    });
+  } catch (error) {
+    console.error("Error fetching projects from Firebase:", error);
+    return [];
+  }
 }
+
 
 
 // Mentor Notu: Proje silme gibi istemci etkileşimi gerektiren kısımları

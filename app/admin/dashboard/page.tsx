@@ -15,50 +15,43 @@ import { Message } from "@/types/message";
 // Mentor Notu: Dashboard için gerekli tüm verileri tek bir asenkron fonksiyonda topluyoruz.
 // Bu fonksiyon, sayfa render edilmeden önce sunucuda çalışacak.
 async function getDashboardData() {
-    // Promise.all kullanarak tüm veri çekme işlemlerini paralel olarak başlatıyoruz.
-    // Bu, toplam bekleme süresini kısaltarak sayfa performansını artırır.
-    const [projectsSnapshot, messagesSnapshot] = await Promise.all([
-        getDocs(collection(db, "projects")),
-        getDocs(collection(db, "messages"))
-    ]);
+    try {
+        if (!db) {
+            console.warn("Firestore database instance (db) is unreachable during build.");
+            return { totalProjects: 0, totalMessages: 0, newMessagesCount: 0, recentProjects: [], recentMessages: [] };
+        }
 
-    // İstatistikleri Hesapla
-    const totalProjects = projectsSnapshot.size;
-    const totalMessages = messagesSnapshot.size;
-    const newMessagesCount = messagesSnapshot.docs.filter(doc => doc.data().status === 'new').length;
+        const [projectsSnapshot, messagesSnapshot] = await Promise.all([
+            getDocs(collection(db, "projects")),
+            getDocs(collection(db, "messages"))
+        ]);
+        // ... rest of the calculation ...
+        const totalProjects = projectsSnapshot.size;
+        // ... (truncated for brevity, I'll provide full content)
+        const totalMessages = messagesSnapshot.size;
+        const newMessagesCount = messagesSnapshot.docs.filter(doc => doc.data().status === 'new').length;
 
-    // Son 3 Projeyi Al
-    const recentProjectsQuery = query(collection(db, "projects"), orderBy("date", "desc"), limit(3));
-    const recentProjectsSnapshot = await getDocs(recentProjectsQuery);
-    const recentProjects: Project[] = recentProjectsSnapshot.docs.map(doc => {
-        const data = doc.data();
-        return {
-            id: doc.id,
-            ...data,
-            date: (data.date as Timestamp)?.toDate() || new Date(),
-        } as Project;
-    });
-    
-    // Son 3 Mesajı Al
-    const recentMessagesQuery = query(collection(db, "messages"), orderBy("date", "desc"), limit(3));
-    const recentMessagesSnapshot = await getDocs(recentMessagesQuery);
-    const recentMessages: Message[] = recentMessagesSnapshot.docs.map(doc => {
-        const data = doc.data();
-        return {
-            id: doc.id,
-            ...data,
-             date: (data.date as Timestamp)?.toDate() || new Date(),
-            } as Message;
+        const recentProjectsQuery = query(collection(db, "projects"), orderBy("date", "desc"), limit(3));
+        const recentProjectsSnapshot = await getDocs(recentProjectsQuery);
+        const recentProjects: Project[] = recentProjectsSnapshot.docs.map(doc => {
+            const data = doc.data();
+            return { id: doc.id, ...data, date: (data.date as Timestamp)?.toDate() || new Date() } as Project;
+        });
+        
+        const recentMessagesQuery = query(collection(db, "messages"), orderBy("date", "desc"), limit(3));
+        const recentMessagesSnapshot = await getDocs(recentMessagesQuery);
+        const recentMessages: Message[] = recentMessagesSnapshot.docs.map(doc => {
+            const data = doc.data();
+            return { id: doc.id, ...data, date: (data.date as Timestamp)?.toDate() || new Date() } as Message;
         });
 
-    return {
-        totalProjects,
-        totalMessages,
-        newMessagesCount,
-        recentProjects,
-        recentMessages
-    };
+        return { totalProjects, totalMessages, newMessagesCount, recentProjects, recentMessages };
+    } catch (e) {
+        console.error("Dashboard data fetch failed:", e);
+        return { totalProjects: 0, totalMessages: 0, newMessagesCount: 0, recentProjects: [], recentMessages: [] };
+    }
 }
+
 
 // Zamanı "X saat önce", "Y gün önce" gibi formatlayan yardımcı fonksiyon
 const formatRelativeTime = (date: Date) => {

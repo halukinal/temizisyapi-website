@@ -23,23 +23,33 @@ import { Message } from "@/types/message"; // Proje genelindeki Message tipini k
 
 // Sunucu tarafında Firestore'dan mesajları çekecek fonksiyon
 async function getMessages(): Promise<Message[]> {
-  const messagesCollection = collection(db, "messages");
-  // Mesajları tarihe göre en yeniden en eskiye doğru sıralıyoruz
-  const q = query(messagesCollection, orderBy("date", "desc"));
-  const querySnapshot = await getDocs(q);
+  try {
+    if (!db) {
+       console.warn("Firestore database instance (db) is not initialized.");
+       return [];
+    }
+    const messagesCollection = collection(db, "messages");
+    // Mesajları tarihe göre en yeniden en eskiye doğru sıralıyoruz
+    const q = query(messagesCollection, orderBy("date", "desc"));
+    const querySnapshot = await getDocs(q);
 
-  const messages = querySnapshot.docs.map(doc => {
-    const data = doc.data();
-    return {
-      id: doc.id,
-      ...data,
-      // Firestore Timestamp objesini JavaScript Date objesine çeviriyoruz
-      date: (data.date as Timestamp)?.toDate(), 
-    } as Message;
-  });
+    const messages = querySnapshot.docs.map(doc => {
+      const data = doc.data();
+      return {
+        id: doc.id,
+        ...data,
+        // Firestore Timestamp objesini JavaScript Date objesine çeviriyoruz
+        date: (data.date as Timestamp)?.toDate(), 
+      } as Message;
+    });
 
-  return messages;
+    return messages;
+  } catch (error) {
+    console.error("Error fetching messages:", error);
+    return [];
+  }
 }
+
 export const dynamic = 'force-dynamic';
 
 export default async function MessagesPage() {
