@@ -1,0 +1,9 @@
+# *
+User-agent: *
+Allow: /
+
+# Host
+Host: https://www.temizisyapi.com
+
+# Sitemaps
+Sitemap: https://www.temizisyapi.com/sitemap.xml

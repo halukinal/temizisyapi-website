@@ -8,10 +8,9 @@
 	],
 	"assets": {
 		"directory": ".open-next/assets",
-		"binding": "APP_ASSETS"
+		"binding": "NEXT_ASSETS"
 	},
 	"images": {
 		"binding": "APP_IMAGES"
-	},
-	"pages_build_output_dir": ".next"
+	}
 }
