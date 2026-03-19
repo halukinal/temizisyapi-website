@@ -10,7 +10,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Checkbox } from "@/components/ui/checkbox"
 import { Send, Calculator, MessageSquare } from "lucide-react"
 
-const WHATSAPP_NUMBER = "905357120918" // İşletme WhatsApp numarası
+const WHATSAPP_NUMBER = "905323882864" // İşletme WhatsApp numarası
 
 export function ContactForms() {
   // İletişim Formu State

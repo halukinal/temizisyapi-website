@@ -28,7 +28,7 @@ const footerLinks = [
 const socialLinks = [
   { name: 'Facebook', icon: Facebook, href: 'https://facebook.com/' },
   { name: 'Twitter', icon: Twitter, href: 'https://twitter.com/' },
-  { name: 'Instagram', icon: Instagram, href: 'https://instagram.com/' },
+  { name: 'Instagram', icon: Instagram, href: 'https://instagram.com/temizisyapi' },
 ];
 
 export function Footer() {
@@ -84,13 +84,13 @@ export function Footer() {
                <div className="flex items-start space-x-3">
                 <Building className="h-5 w-5 flex-shrink-0 mt-1" />
                 <p className="text-sm">
-                  Fatih Sultan Mehmet Sanayi Sitesi, No: 213, Başakşehir/İstanbul
+                  Beyazıt, Eğitim Cd. no:188, 16320 Yıldırım/Bursa  
                 </p>
               </div>
               <div className="flex items-center space-x-3">
                 <Phone className="h-5 w-5 flex-shrink-0" />
                 <a href="tel:+905357120918" className="text-sm hover:text-primary transition-colors">
-                  0535 712 09 18
+                  0532 388 28 64
                 </a>
               </div>
               <div className="flex items-center space-x-3">
