@@ -4,8 +4,9 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "build": "next build",
-    "postbuild": "next-sitemap",
+    "build": "next build && next-sitemap && opennextjs-cloudflare build --dangerouslyUseUnsupportedNextVersion",
+    "postbuild": "echo 'Build process completed'",
+    "build:standard": "next build",
     "build:cloudflare": "opennextjs-cloudflare build --dangerouslyUseUnsupportedNextVersion",
     "deploy": "opennextjs-cloudflare deploy --dangerouslyUseUnsupportedNextVersion"
   },
