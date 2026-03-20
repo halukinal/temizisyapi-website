@@ -1,12 +1,8 @@
 "use server";
 
 import { z } from "zod";
-import { db, storage } from "@/lib/firebase";
-import { collection, addDoc, serverTimestamp } from "firebase/firestore";
-import { ref, uploadBytes, getDownloadURL, deleteObject } from "firebase/storage";
 import { revalidatePath } from "next/cache";
-import { doc, deleteDoc, getDoc } from "firebase/firestore";
-import { Project } from "@/types/project"; // Project tipini import ettiğimizden emin olalım
+import { Project } from "@/types/project";
 
 
 // Proje formu için Zod şeması
@@ -67,86 +63,100 @@ export async function createProject(prevState: FormState, formData: FormData): P
   try {
     const imageUrls: string[] = [];
     const imagePaths: string[] = [];
-
     
-    // Her bir görseli Storage'a yükle
+    // Proje bilgilerini al
+    const projectId = process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID;
+    const fbApiKey = process.env.NEXT_PUBLIC_FIREBASE_API_KEY;
+    const bucket = process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET;
+
+    if (!projectId || !fbApiKey || !bucket) {
+        return { message: "Firebase ayarları eksik.", errors: {} };
+    }
+
+    // Her bir görseli Storage'a yükle (REST API kullanarak)
     for (const image of images) {
       const uniqueFileName = `${Date.now()}-${Math.round(Math.random() * 1E9)}-${image.name}`;
       const filePath = `projects/${uniqueFileName}`;
-      const storageRef = ref(storage, filePath);
-      const snapshot = await uploadBytes(storageRef, image);
-      const downloadURL = await getDownloadURL(snapshot.ref);
+      
+      const uploadUrl = `https://firebasestorage.googleapis.com/v0/b/${bucket}/o?name=${encodeURIComponent(filePath)}`;
+      const uploadRes = await fetch(uploadUrl, {
+        method: "POST",
+        headers: { "Content-Type": image.type },
+        body: image
+      });
+
+      if (!uploadRes.ok) throw new Error("Görsel yüklenemedi.");
+      
+      const uploadData = await uploadRes.json() as { downloadTokens: string };
+      const downloadURL = `https://firebasestorage.googleapis.com/v0/b/${bucket}/o/${encodeURIComponent(filePath)}?alt=media`;
       imageUrls.push(downloadURL);
+      imagePaths.push(filePath);
     }
     
-    // Firestore'a kaydedilecek proje verisi
-    const newProjectData = {
-      title: validatedFields.data.title,
-      category: validatedFields.data.category,
-      location: validatedFields.data.location,
-      description: validatedFields.data.description,
-      featured: validatedFields.data.featured === 'on', // Checkbox değeri 'on' ise true yap
-      images: imageUrls,
-      imagePaths: imagePaths, // Görsellerin yollarını da kaydediyoruz
-      thumbnail: imageUrls[0], // İlk görseli thumbnail olarak ata
-      date: serverTimestamp(),
-    };
+    // Firestore REST API ile kayıt
+    const firestoreUrl = `https://firestore.googleapis.com/v1/projects/${projectId}/databases/(default)/documents/projects?key=${fbApiKey}`;
+    await fetch(firestoreUrl, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        fields: {
+          title: { stringValue: validatedFields.data.title },
+          category: { stringValue: validatedFields.data.category },
+          location: { stringValue: validatedFields.data.location },
+          description: { stringValue: validatedFields.data.description },
+          featured: { booleanValue: validatedFields.data.featured === 'on' },
+          images: { arrayValue: { values: imageUrls.map(url => ({ stringValue: url })) } },
+          imagePaths: { arrayValue: { values: imagePaths.map(path => ({ stringValue: path })) } },
+          thumbnail: { stringValue: imageUrls[0] },
+          date: { timestampValue: new Date().toISOString() }
+        }
+      })
+    });
 
-    await addDoc(collection(db, "projects"), newProjectData);
-
-    // İlgili sayfaların önbelleğini temizle ki yeni veriler görünsün
     revalidatePath("/galeri");
     revalidatePath("/admin/projects");
 
     return { message: "Proje başarıyla oluşturuldu!", errors: {} };
 
   } catch (error) {
-    console.error("Proje oluşturulurken hata:", error);
+    console.error("Proje oluşturulurken REST hatası:", error);
     return { message: "Sunucu hatası: Proje oluşturulamadı.", errors: {} };
   }
 }
 
-
 export async function deleteProject(projectId: string): Promise<{ message: string; error?: string }> {
-    if (!projectId) {
-      return { message: "", error: "Proje ID'si bulunamadı." };
-    }
+    if (!projectId) return { message: "", error: "Proje ID'si bulunamadı." };
   
     try {
-      const projectDocRef = doc(db, "projects", projectId);
-      const projectDoc = await getDoc(projectDocRef);
-  
-      if (!projectDoc.exists()) {
-        return { message: "", error: "Silinecek proje bulunamadı." };
-      }
-  
-      const projectData = projectDoc.data() as Project;
+      const fbProjectId = process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID;
+      const fbApiKey = process.env.NEXT_PUBLIC_FIREBASE_API_KEY;
+
+      // 1. Projeyi getir (Storage yolları için)
+      const getUrl = `https://firestore.googleapis.com/v1/projects/${fbProjectId}/databases/(default)/documents/projects/${projectId}?key=${fbApiKey}`;
+      const getRes = await fetch(getUrl);
+      if (!getRes.ok) return { message: "", error: "Proje bulunamadı." };
       
-      // 1. Storage'dan görselleri sil
-      // 1. Storage'dan görselleri sil (Paralel ve Güvenilir Yöntem)
-      if (projectData.imagePaths && projectData.imagePaths.length > 0) {
-        const deletePromises = projectData.imagePaths.map(path => {
-          const imageRef = ref(storage, path);
-          // Hata durumunda bile diğer silmeleri engellememek için catch ekliyoruz.
-          return deleteObject(imageRef).catch(err => {
-            console.warn(`Görsel silinirken hata oluştu (${path}):`, err.code);
-          });
-        });
-        // Tüm silme işlemlerinin tamamlanmasını bekle
-        await Promise.all(deletePromises);
+      const projectDoc = await getRes.json() as { fields: any };
+      const imagePaths = projectDoc.fields.imagePaths?.arrayValue?.values?.map((v: any) => v.stringValue) || [];
+
+      // 2. Storage'dan görselleri sil
+      const bucket = process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET;
+      for (const path of imagePaths) {
+        const deleteUrl = `https://firebasestorage.googleapis.com/v0/b/${bucket}/o/${encodeURIComponent(path)}?key=${fbApiKey}`;
+        await fetch(deleteUrl, { method: "DELETE" }).catch(() => {});
       }
   
-      // 2. Firestore'dan proje dökümanını sil
-      await deleteDoc(projectDocRef);
+      // 3. Firestore'dan sil
+      const deleteUrl = `https://firestore.googleapis.com/v1/projects/${fbProjectId}/databases/(default)/documents/projects/${projectId}?key=${fbApiKey}`;
+      await fetch(deleteUrl, { method: "DELETE" });
   
-      // Cache'i temizle
       revalidatePath("/admin/projects");
       revalidatePath("/galeri");
   
       return { message: "Proje başarıyla silindi." };
   
     } catch (error) {
-      console.error("Proje silinirken hata:", error);
+      console.error("Proje silinirken REST hatası:", error);
       return { message: "", error: "Sunucu hatası: Proje silinemedi." };
     }
   }

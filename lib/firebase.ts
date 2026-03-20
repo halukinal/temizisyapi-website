@@ -1,9 +1,4 @@
-// lib/firebase.ts (Güvenli ve Hata Yönetimli)
-
-import { initializeApp, getApps, getApp, FirebaseApp } from "firebase/app";
-import { getFirestore, Firestore } from "firebase/firestore";
-import { getStorage, FirebaseStorage } from "firebase/storage";
-import { getAuth, Auth } from "firebase/auth";
+// lib/firebase.ts (Sadece İstemci Tarafı İçin Güvenli)
 
 const firebaseConfig = {
     apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
@@ -15,30 +10,33 @@ const firebaseConfig = {
     measurementId: process.env.NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID
 };
 
-let app: FirebaseApp | undefined;
-let db: Firestore | any;
-let storage: FirebaseStorage | any;
-let auth: Auth | any;
+let db: any = null;
+let storage: any = null;
+let auth: any = null;
 
-// Mentor Notu: Build sırasında API key eksikliği veya yanlış karakter (tırnak gibi) olması durumunda çökmemesi için kontrol ekledik.
-const isKeyValid = firebaseConfig.apiKey && 
-                   firebaseConfig.apiKey.length > 5 && 
-                   firebaseConfig.apiKey !== "undefined" &&
-                   !firebaseConfig.apiKey.includes("\"") &&
-                   !firebaseConfig.apiKey.includes("'");
+// Sadece TARAYICI (Browser) ortamında Firebase SDK'yı başlatıyoruz.
+// Cloudflare Workers (Sunucu) tarafında bu SDK eval() kullandığı için hata veriyor.
+if (typeof window !== "undefined") {
+    // Top-level import yerine require kullanarak sunucu tarafında yüklenmesini engelliyoruz.
+    const { initializeApp, getApps, getApp } = require("firebase/app");
+    const { getFirestore } = require("firebase/firestore");
+    const { getStorage } = require("firebase/storage");
+    const { getAuth } = require("firebase/auth");
 
-if (isKeyValid) {
+    const isKeyValid = firebaseConfig.apiKey && 
+                       firebaseConfig.apiKey.length > 5 && 
+                       firebaseConfig.apiKey !== "undefined";
 
-    try {
-        app = !getApps().length ? initializeApp(firebaseConfig) : getApp();
-        db = getFirestore(app);
-        storage = getStorage(app);
-        auth = getAuth(app);
-    } catch (error) {
-        console.error("Firebase initialization error:", error);
+    if (isKeyValid) {
+        try {
+            const app = !getApps().length ? initializeApp(firebaseConfig) : getApp();
+            db = getFirestore(app);
+            storage = getStorage(app);
+            auth = getAuth(app);
+        } catch (error) {
+            console.error("Firebase initialization error:", error);
+        }
     }
-} else {
-    console.warn("Firebase API Key is missing. Firebase services will not be initialized.");
 }
 
 export { db, storage, auth };

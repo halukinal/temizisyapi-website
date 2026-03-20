@@ -3,8 +3,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { signInWithEmailAndPassword } from "firebase/auth";
-import { auth } from "@/lib/firebase"; // Firebase auth nesnemiz
+import { auth as firebaseAuth } from "@/lib/firebase"; // Yerel auth nesnesi
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -26,9 +25,9 @@ export default function AdminLoginPage() {
     setError("");
 
     try {
-      // Mentor Notu: Burada Firebase'in kendi doğrulama fonksiyonunu kullanıyoruz.
-      // Bu fonksiyon, kimlik bilgilerini güvenli bir şekilde Firebase sunucularına gönderir.
-      await signInWithEmailAndPassword(auth, email, password);
+      // @ts-ignore
+      const { signInWithEmailAndPassword } = require("firebase/auth");
+      await signInWithEmailAndPassword(firebaseAuth, email, password);
       
       // Giriş başarılı olursa, Firebase SDK'sı oturumu tarayıcıda otomatik olarak yönetir.
       // Bizi doğrudan dashboard'a yönlendiriyoruz.

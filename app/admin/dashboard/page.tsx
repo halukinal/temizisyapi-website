@@ -7,47 +7,54 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import Link from "next/link";
 import { BarChart3, Users, MessageSquare, FolderOpen, TrendingUp, Mail, ArrowRight } from "lucide-react";
-import { db } from "@/lib/firebase";
-import { collection, getDocs, query, where, orderBy, limit, Timestamp } from "firebase/firestore";
-import { Project } from "@/types/project";
-import { Message } from "@/types/message";
-
-// Mentor Notu: Dashboard için gerekli tüm verileri tek bir asenkron fonksiyonda topluyoruz.
-// Bu fonksiyon, sayfa render edilmeden önce sunucuda çalışacak.
+// Firebase REST API ile veri çekme (Cloudflare Workers uyumlu)
 async function getDashboardData() {
     try {
-        if (!db) {
-            console.warn("Firestore database instance (db) is unreachable during build.");
+        const projectId = process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID;
+        const fbApiKey = process.env.NEXT_PUBLIC_FIREBASE_API_KEY;
+
+        if (!projectId || !fbApiKey) {
             return { totalProjects: 0, totalMessages: 0, newMessagesCount: 0, recentProjects: [], recentMessages: [] };
         }
 
-        const [projectsSnapshot, messagesSnapshot] = await Promise.all([
-            getDocs(collection(db, "projects")),
-            getDocs(collection(db, "messages"))
+        // Firestore REST API endpoints
+        const projectsUrl = `https://firestore.googleapis.com/v1/projects/${projectId}/databases/(default)/documents/projects?key=${fbApiKey}&pageSize=100`;
+        const messagesUrl = `https://firestore.googleapis.com/v1/projects/${projectId}/databases/(default)/documents/messages?key=${fbApiKey}&pageSize=100`;
+
+        const [projectsRes, messagesRes] = await Promise.all([
+            fetch(projectsUrl, { cache: "no-store" }),
+            fetch(messagesUrl, { cache: "no-store" })
         ]);
-        // ... rest of the calculation ...
-        const totalProjects = projectsSnapshot.size;
-        // ... (truncated for brevity, I'll provide full content)
-        const totalMessages = messagesSnapshot.size;
-        const newMessagesCount = messagesSnapshot.docs.filter(doc => doc.data().status === 'new').length;
 
-        const recentProjectsQuery = query(collection(db, "projects"), orderBy("date", "desc"), limit(3));
-        const recentProjectsSnapshot = await getDocs(recentProjectsQuery);
-        const recentProjects: Project[] = recentProjectsSnapshot.docs.map(doc => {
-            const data = doc.data();
-            return { id: doc.id, ...data, date: (data.date as Timestamp)?.toDate() || new Date() } as Project;
-        });
-        
-        const recentMessagesQuery = query(collection(db, "messages"), orderBy("date", "desc"), limit(3));
-        const recentMessagesSnapshot = await getDocs(recentMessagesQuery);
-        const recentMessages: Message[] = recentMessagesSnapshot.docs.map(doc => {
-            const data = doc.data();
-            return { id: doc.id, ...data, date: (data.date as Timestamp)?.toDate() || new Date() } as Message;
-        });
+        const projectsData = projectsRes.ok ? await projectsRes.json() as any : { documents: [] };
+        const messagesData = messagesRes.ok ? await messagesRes.json() as any : { documents: [] };
 
-        return { totalProjects, totalMessages, newMessagesCount, recentProjects, recentMessages };
+        const projects = (projectsData.documents || []).map((doc: any) => ({
+            id: doc.name.split("/").pop(),
+            title: doc.fields?.title?.stringValue || "",
+            category: doc.fields?.category?.stringValue || "Diğer",
+            featured: doc.fields?.featured?.booleanValue || false,
+            date: new Date(doc.fields?.date?.timestampValue || Date.now())
+        }));
+
+        const messages = (messagesData.documents || []).map((doc: any) => ({
+            id: doc.name.split("/").pop(),
+            name: doc.fields?.name?.stringValue || "",
+            type: doc.fields?.type?.stringValue || "contact",
+            subject: doc.fields?.subject?.stringValue || "",
+            status: doc.fields?.status?.stringValue || "new",
+            date: new Date(doc.fields?.date?.timestampValue || Date.now())
+        }));
+
+        return {
+            totalProjects: projects.length,
+            totalMessages: messages.length,
+            newMessagesCount: messages.filter((m: any) => m.status === 'new').length,
+            recentProjects: projects.slice(0, 3),
+            recentMessages: messages.slice(0, 3)
+        };
     } catch (e) {
-        console.error("Dashboard data fetch failed:", e);
+        console.error("Dashboard data fetch failed (REST):", e);
         return { totalProjects: 0, totalMessages: 0, newMessagesCount: 0, recentProjects: [], recentMessages: [] };
     }
 }

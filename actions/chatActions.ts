@@ -1,9 +1,5 @@
 "use server"
-
-import { GoogleGenerativeAI } from "@google/generative-ai"
 import { headers } from "next/headers"
-import { db } from "@/lib/firebase"
-import { collection, addDoc, serverTimestamp } from "firebase/firestore"
 
 interface ChatMessage {
   role: "user" | "model"
@@ -54,28 +50,38 @@ YANIT VERİRKEN ŞU KURALLARA KESİNLİKLE UY:
 5. WHATSAPP YÖNLENDİRMESİ: Müşterinin ne istediğini anladığında veya ölçüleri / rengi vb. aldığında, mesajının en sonuna sadece [WHATSAPP_READY] yaz ve onları WhatsApp uzmanına devret. Gerçek bir fiyat verme, uzmanımız keşif ve indirimli net fiyat için yazacaktır de.`
 
   try {
-    const genAI = new GoogleGenerativeAI(apiKey)
-    const model = genAI.getGenerativeModel({
-      model: "gemini-2.5-flash-lite",
-      systemInstruction: systemInstruction,
-    })
-
-    // Gemini'nin beklediği formata dönüştür
+    // Gemini'nin beklediği formata dönüştür (REST API için)
     const formattedHistory = history.map(msg => ({
       role: msg.role === "user" ? "user" : "model",
       parts: [{ text: msg.content }]
     }))
 
-    const chat = model.startChat({
-      history: formattedHistory,
-      generationConfig: {
-        temperature: 0.7,
-      }
-    })
+    const body = {
+      system_instruction: { parts: [{ text: systemInstruction }] },
+      contents: [
+        ...formattedHistory,
+        { role: "user", parts: [{ text: newMessage }] }
+      ],
+      generationConfig: { temperature: 0.7 }
+    }
 
-    const result = await chat.sendMessage(newMessage)
-    const response = await result.response;
-    let reply = response.text();
+    const res = await fetch(
+      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`,
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(body)
+      }
+    )
+
+    if (!res.ok) {
+      const errText = await res.text()
+      console.error("Gemini REST API Error:", res.status, errText)
+      return { text: "Sistemde kısa süreli bir yoğunluk var, lütfen birazdan tekrar deneyin.", isWhatsAppReady: false }
+    }
+
+    const data = await res.json() as { candidates?: { content?: { parts?: { text: string }[] } }[] }
+    let reply = data.candidates?.[0]?.content?.parts?.[0]?.text || ""
     let isWhatsAppReady = false
 
     // WhatsApp flag kontrolü
@@ -95,21 +101,6 @@ YANIT VERİRKEN ŞU KURALLARA KESİNLİKLE UY:
 export async function generateWhatsAppSummary(history: ChatMessage[]): Promise<string> {
   try {
     const historyText = history.map(msg => `${msg.role === 'user' ? 'Müşteri' : 'Asistan'}: ${msg.content}`).join('\n')
-    
-    // Konuşma geçmişini buluta (Firebase) yedekle/kaydet
-    try {
-      await addDoc(collection(db, "chat_transcripts"), {
-        type: 'chatbot_conversation',
-        transcript: historyText,
-        date: serverTimestamp(),
-        source: 'whatsapp_redirect',
-        read: false
-      });
-      console.log("Chat transcript saved to Firebase.")
-    } catch (dbError) {
-      console.error("Firebase Database Yükleme Hatası (Chat):", dbError)
-      // Veritabanı hatası olsa bile WhatsApp akışını bozmamak için fırlatmıyoruz
-    }
 
     const apiKey = process.env.GEMINI_API_KEY
     if (!apiKey) {
@@ -132,14 +123,21 @@ MESAJ KURALLARI:
 - Sonunda keşif/fiyat/bilgi talep et.
 - Sadece oluşturduğun mesaj metnini ver, ekstra hiçbir açıklama veya yorum ekleme.`
 
-    const genAI = new GoogleGenerativeAI(apiKey)
-    const model = genAI.getGenerativeModel({
-      model: "gemini-2.5-flash-lite",
-    })
+    const summaryRes = await fetch(
+      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`,
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ contents: [{ role: "user", parts: [{ text: prompt }] }] })
+      }
+    )
 
-    const result = await model.generateContent(prompt)
-    const response = await result.response;
-    return response.text().trim() || "Merhaba, sitenizdeki asistanla konuştum ve detaylı bilgi/fiyat almak istiyorum."
+    if (!summaryRes.ok) {
+      return "Merhaba, sitenizdeki asistanla konuştum ve detaylı bilgi/fiyat almak istiyorum."
+    }
+
+    const summaryData = await summaryRes.json() as { candidates?: { content?: { parts?: { text: string }[] } }[] }
+    return summaryData.candidates?.[0]?.content?.parts?.[0]?.text?.trim() || "Merhaba, sitenizdeki asistanla konuştum ve detaylı bilgi/fiyat almak istiyorum."
 
   } catch (error) {
     console.error("Summary API Error:", error)

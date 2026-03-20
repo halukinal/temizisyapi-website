@@ -2,39 +2,51 @@
 
 import { Header } from "@/components/header";
 import { Footer } from "@/components/footer";
-import { db } from "@/lib/firebase";
 import { Project } from "@/types/project";
-import { GalleryClientContent } from "./gallery-client-content"; // İnteraktif bileşeni birazdan oluşturacağız
-import { collection, getDocs, orderBy, Timestamp, query } from "firebase/firestore"; // 'query' import edildi.
+import { GalleryClientContent } from "./gallery-client-content";
 export const dynamic = "force-dynamic";
 
-
-
-// Mentor Notu: Sayfamız artık bir Sunucu Bileşeni. Verileri doğrudan burada,
-// sunucu tarafında çekiyoruz. Bu, SEO için harikadır ve sayfanın ilk yüklenmesini hızlandırır.
+// Firebase REST API ile Firestore'dan veri çek (Cloudflare Workers uyumlu)
 async function getProjects(): Promise<Project[]> {
     try {
-        if (!db) {
-            console.warn("Firestore database instance (db) is not initialized.");
+        const projectId = process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID;
+        const apiKey = process.env.NEXT_PUBLIC_FIREBASE_API_KEY;
+        if (!projectId || !apiKey) {
+            console.warn("Firebase proje bilgileri eksik.");
             return [];
         }
-        const projectsCollection = collection(db, "projects");
-        // Sorgu, 'query' fonksiyonu ile doğru şekilde oluşturuldu.
-        const q = query(projectsCollection, orderBy("date", "desc"));
-        const projectsSnapshot = await getDocs(q);
 
-        return projectsSnapshot.docs.map(doc => {
-            const data = doc.data();
+        const url = `https://firestore.googleapis.com/v1/projects/${projectId}/databases/(default)/documents/projects?key=${apiKey}&orderBy=date desc`;
+        const res = await fetch(url, { cache: "no-store" });
+        if (!res.ok) return [];
+
+        const data = await res.json() as { documents?: FirestoreDoc[] };
+        if (!data.documents) return [];
+
+        return data.documents.map((doc: FirestoreDoc) => {
+            const fields = doc.fields || {};
             return {
-                id: doc.id,
-                ...data,
-                date: (data.date as Timestamp)?.toDate() || new Date(),
+                id: doc.name.split("/").pop() || "",
+                title: fields.title?.stringValue || "",
+                description: fields.description?.stringValue || "",
+                category: (fields.category?.stringValue || "PVC") as Project["category"],
+                images: fields.images?.stringValue ? [fields.images.stringValue] : [],
+                thumbnail: fields.thumbnail?.stringValue || fields.imageUrl?.stringValue || "",
+                date: new Date(fields.date?.timestampValue || Date.now()),
+                location: fields.location?.stringValue || "",
+                featured: false,
+                imagePaths: [],
             } as Project;
         });
     } catch (error) {
-        console.error("Error fetching projects from Firebase:", error);
+        console.error("Galeri verileri alınamadı:", error);
         return [];
     }
+}
+
+interface FirestoreDoc {
+    name: string;
+    fields: Record<string, { stringValue?: string; timestampValue?: string; integerValue?: string }>;
 }
 
 

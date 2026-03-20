@@ -1,11 +1,12 @@
 "use client"
 
 import { useState, useRef, useEffect } from "react"
-import { Bot, X, MessageSquare, Send, Loader2, ArrowRight } from "lucide-react"
+import { Bot, X, MessageSquare, Send, Loader2 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Card, CardContent, CardHeader, CardTitle, CardFooter } from "@/components/ui/card"
 import { chatWithAssistant, generateWhatsAppSummary } from "@/actions/chatActions"
+import { db as firebaseDb } from "@/lib/firebase"
 
 interface ChatMessage {
   role: "user" | "model"
@@ -65,9 +66,24 @@ export function Chatbot() {
   const handleWhatsAppRedirect = async () => {
     setIsSummarizing(true)
     try {
+      // Konuşmayı Firebase'e kaydet (client-side, Cloudflare Workers'ı etkilemez)
+      try {
+        const { collection, addDoc, serverTimestamp } = require("firebase/firestore");
+        const historyText = messages.map(msg => `${msg.role === 'user' ? 'Müşteri' : 'Asistan'}: ${msg.content}`).join('\n')
+        await addDoc(collection(firebaseDb, "chat_transcripts"), {
+          type: 'chatbot_conversation',
+          transcript: historyText,
+          date: serverTimestamp(),
+          source: 'whatsapp_redirect',
+          read: false
+        })
+      } catch (dbError) {
+        console.error("Firebase kayıt hatası:", dbError)
+        // Firebase hatası WhatsApp akışını engellemez
+      }
+
       const summary = await generateWhatsAppSummary(messages)
       const encodedMessage = encodeURIComponent(summary)
-      // WhatsApp sayfasına yönlendir
       window.open(`https://wa.me/905323882864?text=${encodedMessage}`, "_blank")
     } catch (error) {
       console.error("Summary Generation Error", error)

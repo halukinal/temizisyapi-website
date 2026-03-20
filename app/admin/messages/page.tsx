@@ -17,35 +17,41 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { db } from "@/lib/firebase";
-import { collection, getDocs, query, orderBy, Timestamp } from "firebase/firestore";
-import { Message } from "@/types/message"; // Proje genelindeki Message tipini kullanıyoruz
-
-// Sunucu tarafında Firestore'dan mesajları çekecek fonksiyon
+import { Message } from "@/types/message";
+// Firebase REST API ile mesajları çekme (Cloudflare Workers uyumlu)
 async function getMessages(): Promise<Message[]> {
   try {
-    if (!db) {
-       console.warn("Firestore database instance (db) is not initialized.");
-       return [];
-    }
-    const messagesCollection = collection(db, "messages");
-    // Mesajları tarihe göre en yeniden en eskiye doğru sıralıyoruz
-    const q = query(messagesCollection, orderBy("date", "desc"));
-    const querySnapshot = await getDocs(q);
+    const projectId = process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID;
+    const fbApiKey = process.env.NEXT_PUBLIC_FIREBASE_API_KEY;
 
-    const messages = querySnapshot.docs.map(doc => {
-      const data = doc.data();
+    if (!projectId || !fbApiKey) {
+      return [];
+    }
+
+    const url = `https://firestore.googleapis.com/v1/projects/${projectId}/databases/(default)/documents/messages?key=${fbApiKey}&orderBy=date desc`;
+    const res = await fetch(url, { cache: "no-store" });
+    if (!res.ok) return [];
+
+    const data = await res.json() as { documents?: any[] };
+    if (!data.documents) return [];
+
+    return data.documents.map((doc: any) => {
+      const fields = doc.fields || {};
       return {
-        id: doc.id,
-        ...data,
-        // Firestore Timestamp objesini JavaScript Date objesine çeviriyoruz
-        date: (data.date as Timestamp)?.toDate(), 
+        id: doc.name.split("/").pop() || "",
+        name: fields.name?.stringValue || "",
+        email: fields.email?.stringValue || "",
+        phone: fields.phone?.stringValue || "",
+        message: fields.message?.stringValue || "",
+        subject: fields.subject?.stringValue || "İletişim Formu",
+        type: (fields.type?.stringValue || "contact") as Message["type"],
+        status: fields.status?.stringValue || "new",
+        read: fields.read?.booleanValue || false,
+        date: new Date(fields.date?.timestampValue || Date.now()),
       } as Message;
     });
-
-    return messages;
   } catch (error) {
-    console.error("Error fetching messages:", error);
+    console.error("Mesajlar (REST) alınamadı:", error);
     return [];
   }
 }

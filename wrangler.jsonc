@@ -12,5 +12,9 @@
     },
     "observability": {
         "enabled": true
+    },
+    "vars": {
+        "NEXTJS_ENV": "production",
+        "NODE_VERSION": "20"
     }
 }

@@ -4,8 +4,8 @@
 import type React from "react";
 import { useState, useEffect } from "react";
 import { useRouter, usePathname } from "next/navigation";
-import { auth } from "@/lib/firebase";
-import { onAuthStateChanged, signOut, User } from "firebase/auth";
+import { auth as firebaseAuth } from "@/lib/firebase";
+import type { User } from "firebase/auth";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { LayoutDashboard, FolderOpen, MessageSquare, Settings, LogOut, Menu, X, Home, BarChart3, Loader2 } from "lucide-react";
@@ -25,7 +25,9 @@ export function AdminLayout({ children }: AdminLayoutProps) {
   // Mentor Notu: useEffect ve onAuthStateChanged kullanarak kullanıcının oturum durumunu
   // anlık olarak dinliyoruz. Bu, Firebase'in önerdiği en güvenli yöntemdir.
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
+    // @ts-ignore
+    const { onAuthStateChanged } = require("firebase/auth");
+    const unsubscribe = onAuthStateChanged(firebaseAuth, (currentUser: User | null) => {
       if (currentUser) {
         // Kullanıcı giriş yapmış
         setUser(currentUser);
@@ -43,7 +45,9 @@ export function AdminLayout({ children }: AdminLayoutProps) {
 
 
   const handleLogout = async () => {
-    await signOut(auth);
+    // @ts-ignore
+    const { signOut } = require("firebase/auth");
+    await signOut(firebaseAuth);
     // Yönlendirme zaten useEffect içinde yapılacak
   };
 

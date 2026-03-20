@@ -5,8 +5,10 @@ import { GeistMono } from "geist/font/mono"
 import { Analytics } from "@vercel/analytics/next"
 import "./globals.css"
 import { Suspense } from "react"
+import dynamic from "next/dynamic"
 import { ThemeProvider } from "@/components/theme-provider"
-import { Chatbot } from "@/components/chatbot"
+
+const Chatbot = dynamic(() => import("@/components/chatbot").then(mod => mod.Chatbot), { ssr: false })
 
 const playfairDisplay = Playfair_Display({
   subsets: ["latin"],

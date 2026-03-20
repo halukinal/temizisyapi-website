@@ -1,17 +1,7 @@
-// actions/messageActions.ts
-
 "use server";
 
 import { z } from "zod";
-import { db } from "@/lib/firebase";
-import { collection, addDoc, serverTimestamp } from "firebase/firestore";
-import twilio from "twilio";
 import { headers } from "next/headers";
-
-const client = twilio(
-  process.env.TWILIO_ACCOUNT_SID,
-  process.env.TWILIO_AUTH_TOKEN
-);
 
 // Zod şemasını güncelliyoruz: 'subject' kaldırıldı, 'phone' eklendi (isteğe bağlı).
 const messageSchema = z.object({
@@ -82,46 +72,65 @@ export async function sendContactMessage(
   try {
     const { name, email, phone, message } = validatedFields.data;
     
-    // Firestore'a kaydedilecek veriye 'phone' alanını ekliyoruz.
-    await addDoc(collection(db, "messages"), {
-      type: 'contact',
-      name,
-      email,
-      phone: phone || '', // Telefon girilmediyse boş string olarak kaydet
-      message,
-      date: serverTimestamp(),
-      status: 'new',
-      read: false,
-    });
+    // Firestore REST API ile kayıt (addDoc yerine)
+    const projectId = process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID;
+    const fbApiKey = process.env.NEXT_PUBLIC_FIREBASE_API_KEY;
 
-    try {
-      // WhatsApp bildirimini yeni alanlarla güncelliyoruz.
-      const notificationMessage = `
-Yeni İletişim Formu Mesajı! 🚀
-
-*Gönderen:* ${name}
-*E-posta:* ${email}
-${phone ? `*Telefon:* ${phone}` : ''}
-
-*Mesaj:*
-${message}
-      `;
-
-      await client.messages.create({
-        body: notificationMessage.trim(),
-        from: process.env.TWILIO_WHATSAPP_NUMBER!,
-        to: process.env.MY_WHATSAPP_NUMBER!,
+    if (projectId && fbApiKey) {
+      const firestoreUrl = `https://firestore.googleapis.com/v1/projects/${projectId}/databases/(default)/documents/messages?key=${fbApiKey}`;
+      await fetch(firestoreUrl, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          fields: {
+            type: { stringValue: "contact" },
+            name: { stringValue: name },
+            email: { stringValue: email },
+            phone: { stringValue: phone || "" },
+            message: { stringValue: message },
+            date: { timestampValue: new Date().toISOString() },
+            status: { stringValue: "new" },
+            read: { booleanValue: false }
+          }
+        })
       });
-      console.log("WhatsApp bildirimi başarıyla gönderildi.");
+    }
 
-    } catch (notificationError) {
-      console.error("WhatsApp bildirimi gönderme hatası:", notificationError);
+    // Twilio REST API ile WhatsApp bildirimi (twilio SDK yerine)
+    const accountSid = process.env.TWILIO_ACCOUNT_SID;
+    const authToken = process.env.TWILIO_AUTH_TOKEN;
+    const fromWhatsApp = process.env.TWILIO_WHATSAPP_NUMBER;
+    const toWhatsApp = process.env.MY_WHATSAPP_NUMBER;
+
+    if (accountSid && authToken && fromWhatsApp && toWhatsApp) {
+      try {
+        const notificationMessage = `Yeni İletişim Formu Mesajı! 🚀\n\n*Gönderen:* ${name}\n*E-posta:* ${email}\n${phone ? `*Telefon:* ${phone}` : ""}\n\n*Mesaj:*\n${message}`;
+        
+        const twilioUrl = `https://api.twilio.com/2010-04-01/Accounts/${accountSid}/Messages.json`;
+        const auth = btoa(`${accountSid}:${authToken}`);
+
+        await fetch(twilioUrl, {
+          method: "POST",
+          headers: {
+            "Authorization": `Basic ${auth}`,
+            "Content-Type": "application/x-www-form-urlencoded"
+          },
+          body: new URLSearchParams({
+            To: toWhatsApp,
+            From: fromWhatsApp,
+            Body: notificationMessage
+          })
+        });
+        console.log("WhatsApp bildirimi (REST) başarıyla gönderildi.");
+      } catch (notificationError) {
+        console.error("WhatsApp bildirimi (REST) hatası:", notificationError);
+      }
     }
 
     return { success: true, message: "Mesajınız başarıyla gönderildi!" };
 
   } catch (error) {
-    console.error("Firestore'a yazma hatası:", error);
+    console.error("Firestore'a (REST) yazma hatası:", error);
     return { 
         success: false, 
         message: "Mesaj gönderilirken bir hata oluştu. Lütfen daha sonra tekrar deneyin." 

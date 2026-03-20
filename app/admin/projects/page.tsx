@@ -9,38 +9,42 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Plus, Edit, Trash2, Eye, Calendar, MapPin, ImageIcon, Star } from "lucide-react";
-import { db } from "@/lib/firebase";
 import { Project } from "@/types/project";
 import { deleteProject } from "@/actions/projectActions";
-import { collection, getDocs, orderBy, Timestamp, query } from "firebase/firestore"; // 'query' import edildi.
-
-
-// Mentor Notu: Bu fonksiyon artık bir "async function". Bu, Next.js'in bu bileşeni
-// bir Sunucu Bileşeni olarak ele almasını ve içinde await kullanabilmemizi sağlar.
-// "use client" direktifini kaldırdığımıza dikkat et!
+// Firebase REST API ile projeleri çekme (Cloudflare Workers uyumlu)
 async function getProjects(): Promise<Project[]> {
   try {
-    // Mentor Notu: Eğer Firebase yapılandırması eksikse veya db oluşmamışsa,
-    // hata vermemesi için boş liste döndürüyoruz. Bu, build sürecinin geçmesini sağlar.
-    if (!db) {
-      console.warn("Firestore database instance (db) is not initialized.");
+    const projectId = process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID;
+    const fbApiKey = process.env.NEXT_PUBLIC_FIREBASE_API_KEY;
+
+    if (!projectId || !fbApiKey) {
       return [];
     }
 
-    const projectsCollection = collection(db, "projects");
-    const q = query(projectsCollection, orderBy("date", "desc"));
-    const projectsSnapshot = await getDocs(q);
+    const url = `https://firestore.googleapis.com/v1/projects/${projectId}/databases/(default)/documents/projects?key=${fbApiKey}&orderBy=date desc`;
+    const res = await fetch(url, { cache: "no-store" });
+    if (!res.ok) return [];
 
-    return projectsSnapshot.docs.map(doc => {
-      const data = doc.data();
+    const data = await res.json() as { documents?: any[] };
+    if (!data.documents) return [];
+
+    return data.documents.map((doc: any) => {
+      const fields = doc.fields || {};
       return {
-        id: doc.id,
-        ...data,
-        date: (data.date as Timestamp)?.toDate() || new Date(),
+        id: doc.name.split("/").pop() || "",
+        title: fields.title?.stringValue || "",
+        category: fields.category?.stringValue || "Diğer",
+        location: fields.location?.stringValue || "",
+        description: fields.description?.stringValue || "",
+        featured: fields.featured?.booleanValue || false,
+        images: fields.images?.arrayValue?.values?.map((v: any) => v.stringValue) || [],
+        imagePaths: fields.imagePaths?.arrayValue?.values?.map((v: any) => v.stringValue) || [],
+        thumbnail: fields.thumbnail?.stringValue || "",
+        date: new Date(fields.date?.timestampValue || Date.now()),
       } as Project;
     });
   } catch (error) {
-    console.error("Error fetching projects from Firebase:", error);
+    console.error("Projeler (REST) alınamadı:", error);
     return [];
   }
 }
