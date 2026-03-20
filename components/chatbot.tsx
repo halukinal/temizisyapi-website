@@ -74,7 +74,11 @@ export function Chatbot() {
 
   // 3. Konuşmayı Firestore'da Güncelleme (Yardımcı Fonksiyon)
   const syncChatToFirebase = async (newMessages: ChatMessage[]) => {
-    if (!sessionId || !firebaseDb) return;
+    if (!sessionId || !firebaseDb) {
+      console.warn("Firestore Sync: SessionId veya DB henüz hazır değil.");
+      return;
+    }
+    
     try {
       const { setDoc, doc, serverTimestamp } = require("firebase/firestore");
       await setDoc(doc(firebaseDb, "chats", sessionId), {
@@ -82,6 +86,7 @@ export function Chatbot() {
         lastUpdated: serverTimestamp(),
         ipHint: "session-based"
       }, { merge: true });
+      console.log("Firestore Sync: Konuşma başarıyla güncellendi.");
     } catch (error) {
       console.error("Firestore sync error:", error);
     }
