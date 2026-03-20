@@ -68,10 +68,10 @@ export function Chatbot() {
       const summary = await generateWhatsAppSummary(messages)
       const encodedMessage = encodeURIComponent(summary)
       // WhatsApp sayfasına yönlendir
-      window.open(`https://wa.me/905357120918?text=${encodedMessage}`, "_blank")
+      window.open(`https://wa.me/905323882864?text=${encodedMessage}`, "_blank")
     } catch (error) {
       console.error("Summary Generation Error", error)
-      window.open(`https://wa.me/905357120918?text=Merhaba,%20sitenizdeki%20asistan%20ile%20g%C3%B6r%C3%BC%C5%9Ft%C3%BCm,%20hizmetleriniz%20hakk%C4%B1nda%20bilgi%20almak%20istiyorum.`, "_blank")
+      window.open(`https://wa.me/905323882864?text=Merhaba,%20sitenizdeki%20asistan%20ile%20g%C3%B6r%C3%BC%C5%9Ft%C3%BCm,%20hizmetleriniz%20hakk%C4%B1nda%20bilgi%20almak%20istiyorum.`, "_blank")
     } finally {
       setIsSummarizing(false)
     }

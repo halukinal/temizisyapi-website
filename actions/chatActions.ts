@@ -37,7 +37,13 @@ export async function chatWithAssistant(
   }
 
   try {
-    const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY })
+    const apiKey = process.env.GEMINI_API_KEY
+    if (!apiKey) {
+      console.error("Critical: GEMINI_API_KEY is not defined in environment variables.")
+      return { text: "Üzgünüm, şu an bağlantıda bir sorun yaşıyorum. Lütfen daha sonra tekrar deneyin.", isWhatsAppReady: false }
+    }
+
+    const ai = new GoogleGenAI({ apiKey })
     
     // Sistem Promptu (AI'ın Kişiliği ve Görevi)
     const systemInstruction = `Sen 'Temizişyapı' firmasının yetkili, profesyonel, kibar ve yardımsever sanal asistanısın. 
@@ -118,7 +124,13 @@ export async function generateWhatsAppSummary(history: ChatMessage[]): Promise<s
       // Veritabanı hatası olsa bile WhatsApp akışını bozmamak için fırlatmıyoruz
     }
 
-    const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY })
+    const apiKey = process.env.GEMINI_API_KEY
+    if (!apiKey) {
+      console.error("Critical: GEMINI_API_KEY is not defined in environment variables for Summary.")
+      return "Merhaba, sitenizdeki asistanla konuştum ve detaylı bilgi/fiyat almak istiyorum."
+    }
+
+    const ai = new GoogleGenAI({ apiKey })
     
     const prompt = `Aşağıda bir müşteri ile sanal asistanımız arasında geçen konuşma geçmişi bulunmaktadır.
 Müşteri şu anda WhatsApp iletişime geç butonuna bastı ve müşterinin telefonunda otomatik gönderilmek üzere hazır bir "İlk Mesaj" oluşturmamız gerekiyor.

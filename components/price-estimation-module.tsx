@@ -103,7 +103,7 @@ export function PriceEstimationModule() {
       `*Cam Rengi:* ${glassNames[glassColor] || glassColor}\n` +
       `*Sistemden Çıkan Tahmini Bütçe:* ${estimate}\n\nDetaylı keşif için dönüşünüzü bekliyorum.`
 
-    return `https://wa.me/905357120918?text=${encodeURIComponent(message)}`
+    return `https://wa.me/905323882864?text=${encodeURIComponent(message)}`
   }
 
   return (

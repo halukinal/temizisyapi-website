@@ -64,7 +64,13 @@ export async function generateDesignSuggestion(
 
   // 3. GEMINI API İSTEĞİ
   try {
-    const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY })
+    const apiKey = process.env.GEMINI_API_KEY
+    if (!apiKey) {
+      console.error("Critical: GEMINI_API_KEY is not defined in environment variables.")
+      return "Güzel bir kombinasyon. Size özel bu renk seçimi ile projeniz farklılığını ortaya koyacaktır."
+    }
+
+    const ai = new GoogleGenAI({ apiKey })
     GLOBAL_LIMIT.count++ // API'ye gidecek isteği say
     
     const prompt = `Sen 'Temizişyapı' firmasının yetkili satış asistanı ve yapı/mimari uzmanı bir yapay zeka tasarımcısısın.
@@ -83,7 +89,7 @@ Mesaj en fazla 2 veya 3 kısa cümleden oluşmalı. Çok samimi ("Harika seçim 
 
     return response.text || "Güzel bir kombinasyon. Size özel bu renk seçimi ile projeniz farklılığını ortaya koyacaktır."
   } catch (error) {
-    console.error("Gemini API Error:", error)
+    console.error("Gemini API Error details:", error)
     return "Güzel bir kombinasyon. Size özel bu renk seçimi ile projeniz farklılığını ortaya koyacaktır."
   }
 }
