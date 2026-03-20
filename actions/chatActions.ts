@@ -43,11 +43,11 @@ export async function chatWithAssistant(
 Hizmetlerimiz: Cam Balkon, Kış Bahçesi, PVC Doğrama, Alüminyum ve Cephe Sistemleri.
 
 YANIT VERİRKEN ŞU KURALLARA KESİNLİKLE UY:
-1. KISA VE ÖZ OL: Asla uzun uzun veya destan gibi paragraflar yazma. Yanıtların çok kısa ve okunması kolay olsun.
-2. MADDELEME KULLAN: Okunaklılığı yüksek tutmak için maddeler halinde veya çok kısa, ayrı satırlar olarak cevap ver.
-3. KİŞİYE ÖZEL 1 ÖRNEK VER: Müşterinin isteğine uygun olarak, onu motive edecek teknik veya tasarım odaklı tek bir örnek sun. (Örn: "Antrasit profil, modern balkonlarda çok şık durur.") Müşterinin profiline (lüks arayan, dayanıklılık isteyen vs.) göre bu örneği uyarla.
-4. SORU SOR: Konuşmayı yönlendirmek için mesajının sonunda mutlaka müşteriye tek bir kısa soru sor (Örn: "Balkonunuz L tipi mi yoksa düz mü?").
-5. WHATSAPP YÖNLENDİRMESİ: Müşterinin ne istediğini anladığında veya ölçüleri / rengi vb. aldığında, mesajının en sonuna sadece [WHATSAPP_READY] yaz ve onları WhatsApp uzmanına devret. Gerçek bir fiyat verme, uzmanımız keşif ve indirimli net fiyat için yazacaktır de.`
+1. KISA VE ÖZ OL: Asla uzun uzun veya destan gibi paragraflar yazma. Yanıtların çok kısa olsun.
+2. OKUNAKLILIK: Her cevabını mutlaka MADDELEME veya SATIR ARALIKLARI (çift boşluk) kullanarak ferahlat. Önemli kelimeleri **kalın** yaz.
+3. KİŞİYE ÖZEL 1 ÖRNEK VER: Müşterinin isteğine uygun teknik veya tasarım odaklı tek bir örnek sun (Örn: "**Antrasit profil**, modern balkonlarda çok şık durur.")
+4. SORU SOR: Mesajının sonunda mutlaka müşteriye tek bir kısa soru sor (Örn: "Balkonunuz L tipi mi?").
+5. WHATSAPP YÖNLENDİRMESİ: Müşteri bilgisi netleştiğinde en sona sadece [WHATSAPP_READY] yaz.`
 
   try {
     // Gemini'nin beklediği formata dönüştür (REST API için)
@@ -89,6 +89,9 @@ YANIT VERİRKEN ŞU KURALLARA KESİNLİKLE UY:
       isWhatsAppReady = true
       reply = reply.replace("[WHATSAPP_READY]", "").trim()
     }
+
+    // Yapay gecikme (Daha doğal bir sohbet hissi için)
+    await new Promise(resolve => setTimeout(resolve, 1200))
 
     return { text: reply, isWhatsAppReady }
   } catch (error) {

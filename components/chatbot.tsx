@@ -125,13 +125,17 @@ export function Chatbot() {
             {messages.map((msg, idx) => (
               <div key={idx} className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"}`}>
                 <div 
-                  className={`max-w-[85%] rounded-2xl p-3 text-sm ${
+                  className={`max-w-[85%] rounded-2xl p-3.5 text-sm leading-relaxed whitespace-pre-wrap ${
                     msg.role === "user" 
-                      ? "bg-primary text-primary-foreground rounded-tr-none" 
-                      : "bg-muted text-foreground border border-border shadow-sm rounded-tl-none"
+                      ? "bg-primary text-primary-foreground rounded-tr-none shadow-md" 
+                      : "bg-muted text-foreground border border-border shadow-sm rounded-tl-none font-medium"
                   }`}
                 >
-                  {msg.content}
+                  {msg.content.split(/(\*\*.*?\*\*)/).map((part, i) => 
+                    part.startsWith('**') && part.endsWith('**') 
+                      ? <strong key={i}>{part.slice(2, -2)}</strong> 
+                      : part
+                  )}
                 </div>
               </div>
             ))}
