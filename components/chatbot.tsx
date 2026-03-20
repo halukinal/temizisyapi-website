@@ -7,8 +7,6 @@ import { Input } from "@/components/ui/input"
 import { Card, CardContent, CardHeader, CardTitle, CardFooter } from "@/components/ui/card"
 import { chatWithAssistant, generateWhatsAppSummary } from "@/actions/chatActions"
 import { db as firebaseDb, auth as firebaseAuth } from "@/lib/firebase"
-import { signInAnonymously, onAuthStateChanged } from "firebase/auth"
-import { doc, getDoc, setDoc, serverTimestamp, collection, addDoc } from "firebase/firestore"
 
 interface ChatMessage {
   role: "user" | "model"
@@ -36,8 +34,11 @@ export function Chatbot() {
   // 1. Firebase Anonim Giriş ve Session Başlatma
   useEffect(() => {
     if (!firebaseAuth) return;
+    
+    // Fonksiyonları içeride require ediyoruz
+    const { onAuthStateChanged, signInAnonymously } = require("firebase/auth");
 
-    const unsubscribe = onAuthStateChanged(firebaseAuth, async (user) => {
+    const unsubscribe = onAuthStateChanged(firebaseAuth, async (user: any) => {
       if (user) {
         setSessionId(user.uid);
         // Önceki konuşmayı yükle
@@ -56,7 +57,9 @@ export function Chatbot() {
 
   // 2. Geçmişi Firestore'dan Çekme
   const loadChatHistory = async (uid: string) => {
+    if (!firebaseDb) return;
     try {
+      const { getDoc, doc } = require("firebase/firestore");
       const chatDoc = await getDoc(doc(firebaseDb, "chats", uid));
       if (chatDoc.exists()) {
         const data = chatDoc.data();
@@ -73,10 +76,11 @@ export function Chatbot() {
   const syncChatToFirebase = async (newMessages: ChatMessage[]) => {
     if (!sessionId || !firebaseDb) return;
     try {
+      const { setDoc, doc, serverTimestamp } = require("firebase/firestore");
       await setDoc(doc(firebaseDb, "chats", sessionId), {
         messages: newMessages,
         lastUpdated: serverTimestamp(),
-        ipHint: "session-based" // Gizlilik için IP yerine session tabanlı olduğunu belirten not
+        ipHint: "session-based"
       }, { merge: true });
     } catch (error) {
       console.error("Firestore sync error:", error);
@@ -125,8 +129,9 @@ export function Chatbot() {
   const handleWhatsAppRedirect = async () => {
     setIsSummarizing(true)
     try {
-      // Konuşma özetini "transcripts" koleksiyonuna ek bir kayıt olarak atalım (Admin paneli için)
+      // Konuşma özetini "transcripts" koleksiyonuna ek bir kayıt olarak atalım
       try {
+        const { collection, addDoc, serverTimestamp } = require("firebase/firestore");
         const historyText = messages.map(msg => `${msg.role === 'user' ? 'Müşteri' : 'Asistan'}: ${msg.content}`).join('\n')
         await addDoc(collection(firebaseDb, "chat_transcripts"), {
           sessionId: sessionId,

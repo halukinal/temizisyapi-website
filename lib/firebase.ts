@@ -1,8 +1,4 @@
 // lib/firebase.ts (Sadece İSTEMCİ tarafında çalışır)
-import { initializeApp, getApps, getApp } from "firebase/app";
-import { getFirestore } from "firebase/firestore";
-import { getStorage } from "firebase/storage";
-import { getAuth } from "firebase/auth";
 
 const firebaseConfig = {
     apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
@@ -14,12 +10,17 @@ const firebaseConfig = {
     measurementId: process.env.NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID
 };
 
-let app: any;
+let app: any = null;
 let db: any = null;
 let storage: any = null;
 let auth: any = null;
 
 if (typeof window !== "undefined") {
+    const { initializeApp, getApps, getApp } = require("firebase/app");
+    const { getFirestore } = require("firebase/firestore");
+    const { getStorage } = require("firebase/storage");
+    const { getAuth } = require("firebase/auth");
+
     const isKeyValid = firebaseConfig.apiKey && 
                        firebaseConfig.apiKey.length > 5 && 
                        firebaseConfig.apiKey !== "undefined";
