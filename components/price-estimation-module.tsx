@@ -13,6 +13,7 @@ export function PriceEstimationModule() {
   const [width, setWidth] = useState("")
   const [height, setHeight] = useState("")
   const [shape, setShape] = useState("duz")
+  const [systemType, setSystemType] = useState("cam-balkon")
   const [profileColor, setProfileColor] = useState("antrasit")
   const [glassColor, setGlassColor] = useState("fume")
   const [step, setStep] = useState<"form" | "result">("form")
@@ -25,7 +26,8 @@ export function PriceEstimationModule() {
     
     if (width && height) {
       setIsGenerating(true)
-      let area = parseFloat(width) * parseFloat(height)
+      let actualHeight = Math.max(1.6, parseFloat(height));
+      let area = parseFloat(width) * actualHeight;
       
       // Balkon şekline göre ekstra girinti çıkıntı fire/fiyat farkı (Simülasyon)
       let shapeMultiplier = 1.0;
@@ -33,9 +35,13 @@ export function PriceEstimationModule() {
       if (shape === "u-tipi") shapeMultiplier = 1.2;
       if (shape === "ovali-acili") shapeMultiplier = 1.35;
       
-      const basePriceEuro = 75; // Güncel Kura Bağlanabilir Taban Fiyat (Örn: 75 Euro/m2)
-      const currentExchangeRate = 35.5; // Örnek Kur
-      const basePriceTRY = basePriceEuro * currentExchangeRate;
+      let basePriceTRY = 4500; // Standart ve cam balkon m2 fiyatı
+      if (systemType === "giyotin") {
+        basePriceTRY = 7000;
+        if (area < 7) {
+          area = 7;
+        }
+      }
       
       const total = area * basePriceTRY * shapeMultiplier;
       const formatted = new Intl.NumberFormat('tr-TR', { style: 'currency', currency: 'TRY' }).format(total)
@@ -84,8 +90,13 @@ export function PriceEstimationModule() {
       "mavi": "Mavi Cam",
       "yesil": "Yeşil Cam",
     }
+    const systemNames: Record<string, string> = {
+      "cam-balkon": "Cam Balkon",
+      "giyotin": "Giyotin Cam Balkon"
+    }
 
     const message = `Merhaba, sitenizdeki modül üzerinden hesaplama yaptım. Projemle ilgili detaylar aşağıdadır, yardımcı olabilir misiniz?\n\n` +
+      `*Sistem Türü:* ${systemNames[systemType] || systemType}\n` +
       `*Ölçüler:* ${width}m Genişlik x ${height}m Yükseklik\n` +
       `*Balkon Şekli:* ${shapeNames[shape] || shape}\n` +
       `*Profil Tasarımı:* ${profileNames[profileColor] || profileColor}\n` +
@@ -142,6 +153,19 @@ export function PriceEstimationModule() {
                       required
                     />
                   </div>
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="systemType">Sistem Türü</Label>
+                  <Select value={systemType} onValueChange={setSystemType} required>
+                    <SelectTrigger className="w-full">
+                      <SelectValue placeholder="Sistem türünü seçin" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="cam-balkon">Cam Balkon</SelectItem>
+                      <SelectItem value="giyotin">Giyotin Cam Balkon</SelectItem>
+                    </SelectContent>
+                  </Select>
                 </div>
 
                 <div className="space-y-2">
