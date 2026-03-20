@@ -216,10 +216,24 @@ export function Chatbot() {
 
       const summary = await generateWhatsAppSummary(messages)
       const encodedMessage = encodeURIComponent(summary)
-      window.open(`https://wa.me/905323882864?text=${encodedMessage}`, "_blank")
+      const whatsappUrl = `https://api.whatsapp.com/send?phone=905323882864&text=${encodedMessage}`;
+      
+      // iPhone/Safari için window.open bazen engellenir, bu yüzden direkt yönlendirme en güvenlisidir.
+      // Mobilde zaten yeni sekmeye gerek yoktur, kullanıcı uygulamaya geçer.
+      if (/iPhone|iPad|iPod|Android/i.test(navigator.userAgent)) {
+        window.location.href = whatsappUrl;
+      } else {
+        window.open(whatsappUrl, "_blank");
+      }
     } catch (error) {
       console.error("Summary Generation Error", error)
-      window.open(`https://wa.me/905323882864?text=Merhaba,%20sitenizdeki%20asistan%20ile%20g%C3%B6r%C3%BC%C5%9Ft%C3%BCm,%20hizmetleriniz%20hakk%C4%B1nda%20bilgi%20almak%20istiyorum.`, "_blank")
+      const fallbackUrl = `https://api.whatsapp.com/send?phone=905323882864&text=Merhaba,%20sitenizdeki%20asistan%20ile%20g%C3%B6r%C3%BC%C5%9Ft%C3%BCm,%20hizmetleriniz%20hakk%C4%B1nda%20bilgi%20almak%20istiyorum.`;
+      
+      if (/iPhone|iPad|iPod|Android/i.test(navigator.userAgent)) {
+        window.location.href = fallbackUrl;
+      } else {
+        window.open(fallbackUrl, "_blank");
+      }
     } finally {
       setIsSummarizing(false)
     }
