@@ -14,7 +14,7 @@ export async function chatWithAssistant(
   history: ChatMessage[],
   newMessage: string,
   userContext?: string // Kullanıcıyı tanımak için ek bilgiler (isim, önceki ilgiler vb.)
-): Promise<{ text: string; isWhatsAppReady: boolean }> {
+): Promise<{ text: string; isWhatsAppReady: boolean; isPricingRedirect: boolean }> {
   const ip = headers().get("x-forwarded-for") || "unknown_ip"
   const now = Date.now()
   const ipData = chatIpLimits.get(ip)
@@ -24,7 +24,7 @@ export async function chatWithAssistant(
       chatIpLimits.set(ip, { count: 1, lastRequest: now })
     } else {
       if (ipData.count >= MAX_CHAT_PER_MINUTE) {
-         return { text: "Çok fazla mesaj gönderdiniz. Lütfen kısa bir süre bekleyip tekrar deneyin.", isWhatsAppReady: false }
+         return { text: "Çok fazla mesaj gönderdiniz. Lütfen kısa bir süre bekleyip tekrar deneyin.", isWhatsAppReady: false, isPricingRedirect: false }
       }
       ipData.count++
       ipData.lastRequest = now
@@ -36,7 +36,7 @@ export async function chatWithAssistant(
   const apiKey = process.env.GEMINI_API_KEY
   if (!apiKey) {
     console.error("Critical: GEMINI_API_KEY is not defined in environment variables.")
-    return { text: "Üzgünüm, şu an bağlantıda bir sorun yaşıyorum. Lütfen daha sonra tekrar deneyin.", isWhatsAppReady: false }
+    return { text: "Üzgünüm, şu an bağlantıda bir sorun yaşıyorum. Lütfen daha sonra tekrar deneyin.", isWhatsAppReady: false, isPricingRedirect: false }
   }
 
   // Sistem Promptu (AI'ın Kişiliği ve Görevi)
@@ -54,6 +54,7 @@ STRATEJİ:
 - Önceki konuşmaları (varsa ${userContext ? "hatırla" : "yok"}) dikkate al.
 - Müşteriden uygulama yapılacak yer (Balkon, Teras, Bahçe vb.) veya ölçü bilgisi iste.
 - Her mesajın sonunda tek bir soru sor.
+- Müşteri fiyatlandırma, m2 hesaplama veya maliyet sorarsa, asistanlık yapmak yerine otomatik hesaplama aracına yönlendirmek için [PRICING_PAGE] yaz.
 - Bilgi topladığında veya 2-3 sorudan sonra [WHATSAPP_READY] yaz.`
 
   try {
@@ -84,14 +85,21 @@ STRATEJİ:
     if (!res.ok) {
       const errText = await res.text()
       console.error("Gemini REST API Error:", res.status, errText)
-      return { text: "Sistemde kısa süreli bir yoğunluk var, lütfen birazdan tekrar deneyin.", isWhatsAppReady: false }
+      return { text: "Sistemde kısa süreli bir yoğunluk var, lütfen birazdan tekrar deneyin.", isWhatsAppReady: false, isPricingRedirect: false }
     }
 
     const data = await res.json() as { candidates?: { content?: { parts?: { text: string }[] } }[] }
     let reply = data.candidates?.[0]?.content?.parts?.[0]?.text || ""
     let isWhatsAppReady = false
+    let isPricingRedirect = false
 
-    // WhatsApp flag kontrolü
+    // Flag kontrolleri
+    if (reply.includes("[PRICING_PAGE]")) {
+      isPricingRedirect = true
+      reply = reply.replace("[PRICING_PAGE]", "").trim()
+      if (!reply) reply = "Sizin için bir fiyat hesaplama aracımız var. Sizi oraya yönlendiriyorum..."
+    }
+
     if (reply.includes("[WHATSAPP_READY]")) {
       isWhatsAppReady = true
       reply = reply.replace("[WHATSAPP_READY]", "").trim()
@@ -100,10 +108,10 @@ STRATEJİ:
     // Yapay gecikme (Daha doğal bir sohbet hissi için)
     await new Promise(resolve => setTimeout(resolve, 1200))
 
-    return { text: reply, isWhatsAppReady }
+    return { text: reply, isWhatsAppReady, isPricingRedirect }
   } catch (error) {
     console.error("Chat API Error:", error)
-    return { text: "Sistemde kısa süreli bir yoğunluk var, lütfen birazdan tekrar deneyin.", isWhatsAppReady: false }
+    return { text: "Sistemde kısa süreli bir yoğunluk var, lütfen birazdan tekrar deneyin.", isWhatsAppReady: false, isPricingRedirect: false }
   }
 }
 

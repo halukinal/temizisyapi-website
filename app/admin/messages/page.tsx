@@ -47,6 +47,7 @@ async function getMessages(): Promise<Message[]> {
         type: (fields.type?.stringValue || "contact") as Message["type"],
         status: fields.status?.stringValue || "new",
         read: fields.read?.booleanValue || false,
+        aiSummary: fields.aiSummary?.stringValue || "",
         date: new Date(fields.date?.timestampValue || Date.now()),
       } as Message;
     });
@@ -86,8 +87,8 @@ export default async function MessagesPage() {
               <TableRow>
                 <TableHead>Durum</TableHead>
                 <TableHead>Gönderen</TableHead>
-                <TableHead>E-posta</TableHead>
                 <TableHead>Konu</TableHead>
+                <TableHead>AI Özeti</TableHead>
                 <TableHead className="text-right">Tarih</TableHead>
               </TableRow>
             </TableHeader>
@@ -101,8 +102,10 @@ export default async function MessagesPage() {
                       </Badge>
                     </TableCell>
                     <TableCell className="font-medium">{message.name}</TableCell>
-                    <TableCell>{message.email}</TableCell>
-                    <TableCell>{message.subject}</TableCell>
+                    <TableCell className="text-sm">{message.subject}</TableCell>
+                    <TableCell className="max-w-xs truncate text-xs text-muted-foreground italic">
+                      {message.aiSummary || "Özet yok"}
+                    </TableCell>
                     <TableCell className="text-right">
                       {formatDate(message.date)}
                     </TableCell>

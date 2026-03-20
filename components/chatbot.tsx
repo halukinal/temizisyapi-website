@@ -1,7 +1,8 @@
 "use client"
 
 import { useState, useRef, useEffect } from "react"
-import { Bot, X, MessageSquare, Send, Loader2, PlusCircle, RotateCcw } from "lucide-react"
+import { useRouter } from "next/navigation"
+import { Bot, X, MessageSquare, Send, Loader2, PlusCircle, RotateCcw, Sparkles } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Card, CardContent, CardHeader, CardTitle, CardFooter } from "@/components/ui/card"
@@ -13,8 +14,8 @@ interface ChatMessage {
   content: string
 }
 
-export function Chatbot() {
-  const [isOpen, setIsOpen] = useState(false)
+export function Chatbot({ embedded = false }: { embedded?: boolean }) {
+  const [isOpen, setIsOpen] = useState(embedded)
   const [messages, setMessages] = useState<ChatMessage[]>([{ 
     role: "model", 
     content: "Merhaba! 👋 Ben Temiziş Yapı dijital asistanınızım. Size Cam Balkon, PVC ve Alüminyum sistemleri gibi her konuda yardımcı olabilirim.\n\n⚠️ Kişisel verilerinizin korunması ve kalite standartlarımız gereği, bu görüşme **Temiziş Yapı** tarafından kayıt altına alınmaktadır.\n\nSize nasıl yardımcı olabilirim?" 
@@ -28,6 +29,7 @@ export function Chatbot() {
   const [isWhatsAppReady, setIsWhatsAppReady] = useState(false) 
   const [sessionId, setSessionId] = useState<string | null>(null)
   const [userContext, setUserContext] = useState<string | null>(null)
+  const router = useRouter()
   
   const initialBotMessage: ChatMessage = { 
     role: "model", 
@@ -185,6 +187,23 @@ export function Chatbot() {
       
       // Asistan cevabını anlık kaydet
       await syncChatToFirebase(finalMessages)
+
+      // Eğer fiyatlandırma yönlendirmesi varsa
+      if (response.isPricingRedirect) {
+        setTimeout(() => {
+          if (embedded) {
+            // Gömülü moddayken direkt adrese git veya scroll yap (eğer aynı sayfadaysak)
+            const element = document.getElementById('fiyat-hesapla');
+            if (element) {
+              element.scrollIntoView({ behavior: 'smooth' });
+            } else {
+              router.push("/yaptigimiz-isler/cam-balkon#fiyat-hesapla");
+            }
+          } else {
+            router.push("/yaptigimiz-isler/cam-balkon#fiyat-hesapla");
+          }
+        }, 2000);
+      }
     } catch (error) {
       console.error("Chat error:", error)
       setMessages(prev => [...prev, { role: "model", content: "Üzgünüm, şu an bağlantıda bir hata oluştu. Dilerseniz direkt butona basarak WhatsApp üzerinden uzmanımızla iletişime geçebilirsiniz." }])
@@ -240,28 +259,43 @@ export function Chatbot() {
   }
 
   return (
-    <div className="fixed bottom-6 right-6 z-50">
-      {/* Kapalı Durumdaki İkon */}
-      {!isOpen && (
-        <Button 
-          onClick={() => setIsOpen(true)}
-          className="rounded-full w-14 h-14 bg-primary hover:bg-primary/90 text-primary-foreground shadow-2xl flex items-center justify-center transition-transform hover:scale-110"
-        >
-          <MessageSquare className="w-6 h-6" />
-        </Button>
+    <div className={embedded ? "w-full" : "fixed bottom-6 right-6 lg:bottom-16 lg:right-16 z-50"}>
+      {/* Kapalı Durumdaki İkon - Modern AI Button */}
+      {!isOpen && !embedded && (
+        <div className="relative group">
+          {/* Pulsing outer ring for emphasis */}
+          <div className="absolute -inset-1.5 bg-gradient-to-r from-orange-500 via-purple-600 to-indigo-600 rounded-full blur-lg opacity-40 group-hover:opacity-100 group-hover:blur-xl animate-pulse transition duration-1000"></div>
+          
+          <Button 
+            onClick={() => setIsOpen(true)}
+            className="relative rounded-full w-16 h-16 lg:w-20 lg:h-20 bg-gradient-to-tr from-indigo-600 via-purple-600 to-orange-500 hover:scale-110 active:scale-95 text-white shadow-2xl flex items-center justify-center transition-all duration-300 border border-white/30"
+          >
+            <div className="flex flex-col items-center justify-center">
+              <Sparkles className="w-7 h-7 lg:w-9 lg:h-9 mb-0.5 animate-pulse" />
+              <span className="text-[10px] lg:text-[11px] font-extrabold tracking-tighter uppercase leading-none">AI DESTEK</span>
+            </div>
+          </Button>
+
+          {/* AI Badge */}
+          <div className="absolute -top-1 -left-1 lg:-top-2 lg:-left-2 bg-white text-indigo-600 text-[10px] lg:text-[12px] font-black px-2 py-1 rounded-full border border-indigo-100 shadow-md">
+            AI
+          </div>
+        </div>
       )}
 
       {/* Açık Durumdaki Chat Penceresi */}
       {isOpen && (
-        <Card className="w-[350px] sm:w-[400px] h-[500px] flex flex-col shadow-2xl border-primary/20 bg-background/95 backdrop-blur overflow-hidden animate-in slide-in-from-bottom-5">
-          <CardHeader className="bg-primary text-primary-foreground p-4 flex flex-row items-center justify-between">
-            <div className="flex items-center space-x-2">
-              <Bot className="w-6 h-6" />
+        <Card className={`${embedded ? "w-full min-h-[500px] h-full" : "w-[350px] sm:w-[400px] h-[600px]"} flex flex-col shadow-2xl border-primary/20 bg-background/95 backdrop-blur overflow-hidden animate-in slide-in-from-bottom-5 rounded-3xl`}>
+          <CardHeader className="bg-gradient-to-r from-indigo-600 to-purple-600 text-primary-foreground p-5 flex flex-row items-center justify-between">
+            <div className="flex items-center space-x-3">
+              <div className="p-2 bg-white/20 rounded-xl">
+                 <Bot className="w-6 h-6 text-white" />
+              </div>
               <div>
-                <CardTitle className="text-base font-semibold">Temiziş Yapı Asistan</CardTitle>
-                <div className="flex items-center space-x-2">
-                   <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse" />
-                   <p className="text-[10px] text-primary-foreground/80 font-medium uppercase tracking-wider">Çevrimiçi</p>
+                <CardTitle className="text-base font-bold tracking-tight">Temiziş Yapı Asistan</CardTitle>
+                <div className="flex items-center space-x-1.5">
+                   <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse shadow-[0_0_8px_rgba(74,222,128,0.5)]" />
+                   <p className="text-[11px] text-white/80 font-semibold uppercase tracking-wider">Aktif</p>
                 </div>
               </div>
             </div>
@@ -270,30 +304,32 @@ export function Chatbot() {
                 variant="ghost" 
                 size="icon" 
                 onClick={handleNewChat} 
-                className="text-primary-foreground hover:bg-primary-foreground/20 rounded-full w-8 h-8"
+                className="text-white hover:bg-white/20 rounded-full w-9 h-9"
                 title="Yeni Sohbet Başlat"
               >
                 <RotateCcw className="w-4 h-4" />
               </Button>
-              <Button variant="ghost" size="icon" onClick={() => setIsOpen(false)} className="text-primary-foreground hover:bg-primary-foreground/20 rounded-full w-8 h-8">
-                <X className="w-5 h-5" />
-              </Button>
+              {!embedded && (
+                <Button variant="ghost" size="icon" onClick={() => setIsOpen(false)} className="text-white hover:bg-white/20 rounded-full w-9 h-9">
+                  <X className="w-5 h-5" />
+                </Button>
+              )}
             </div>
           </CardHeader>
 
-          <CardContent className="flex-1 overflow-y-auto p-4 space-y-4">
+          <CardContent className={`flex-1 overflow-y-auto p-4 space-y-4 ${embedded ? 'bg-zinc-50/50 min-h-[300px]' : 'bg-zinc-50/30'}`}>
             {messages.map((msg, idx) => (
               <div key={idx} className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"}`}>
                 <div 
-                  className={`max-w-[85%] rounded-2xl p-3.5 text-sm leading-relaxed whitespace-pre-wrap ${
+                  className={`max-w-[85%] rounded-2xl p-4 text-[14px] leading-relaxed whitespace-pre-wrap ${
                     msg.role === "user" 
-                      ? "bg-primary text-primary-foreground rounded-tr-none shadow-md" 
-                      : "bg-muted text-foreground border border-border shadow-sm rounded-tl-none font-medium"
+                      ? "bg-indigo-600 text-white rounded-tr-none shadow-lg" 
+                      : "bg-white text-zinc-800 border border-zinc-200 shadow-sm rounded-tl-none font-medium"
                   }`}
                 >
                   {msg.content.split(/(\*\*.*?\*\*)/).map((part, i) => 
                     part.startsWith('**') && part.endsWith('**') 
-                      ? <strong key={i}>{part.slice(2, -2)}</strong> 
+                      ? <strong key={i} className="font-bold text-inherit">{part.slice(2, -2)}</strong> 
                       : part
                   )}
                 </div>
@@ -301,11 +337,11 @@ export function Chatbot() {
             ))}
             {isLoading && (
               <div className="flex justify-start">
-                <div className="bg-muted border border-border rounded-2xl rounded-tl-none p-3 max-w-[85%] text-sm flex items-center shadow-sm">
-                  <span className="flex space-x-1">
-                    <span className="animate-bounce inline-block w-1.5 h-1.5 bg-zinc-400 rounded-full"></span>
-                    <span className="animate-bounce inline-block w-1.5 h-1.5 bg-zinc-400 rounded-full" style={{ animationDelay: '0.2s' }}></span>
-                    <span className="animate-bounce inline-block w-1.5 h-1.5 bg-zinc-400 rounded-full" style={{ animationDelay: '0.4s' }}></span>
+                <div className="bg-white border border-zinc-200 rounded-2xl rounded-tl-none p-4 max-w-[85%] shadow-sm">
+                  <span className="flex space-x-1.5">
+                    <span className="animate-bounce inline-block w-2 h-2 bg-indigo-400 rounded-full"></span>
+                    <span className="animate-bounce inline-block w-2 h-2 bg-purple-400 rounded-full" style={{ animationDelay: '0.2s' }}></span>
+                    <span className="animate-bounce inline-block w-2 h-2 bg-pink-400 rounded-full" style={{ animationDelay: '0.4s' }}></span>
                   </span>
                 </div>
               </div>
@@ -313,11 +349,11 @@ export function Chatbot() {
             <div ref={messagesEndRef} />
           </CardContent>
 
-          <CardFooter className="p-3 border-t bg-background/50 flex-col gap-2">
+          <CardFooter className="p-4 border-t bg-white flex-col gap-3">
             {(isWhatsAppReady || messages.length > 3) && (
               <Button 
                 onClick={handleWhatsAppRedirect} 
-                className="w-full bg-green-600 hover:bg-green-700 text-white shadow font-semibold"
+                className="w-full h-12 bg-green-600 hover:bg-green-700 text-white shadow-lg font-bold text-sm rounded-2xl transition-all hover:scale-[1.02]"
                 disabled={isSummarizing}
               >
                 {isSummarizing ? (
@@ -328,19 +364,19 @@ export function Chatbot() {
               </Button>
             )}
 
-            <form onSubmit={handleSendMessage} className="flex flex-row w-full gap-2 mt-1">
+            <form onSubmit={handleSendMessage} className="flex flex-row w-full gap-2">
               <Input 
-                placeholder="Mesajınızı yazın..." 
-                className="flex-1 focus-visible:ring-primary rounded-full" 
+                placeholder="Nasıl yardımcı olabilirim?" 
+                className="flex-1 h-12 focus-visible:ring-indigo-500 rounded-2xl bg-zinc-100 border-none px-4" 
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
                 disabled={isLoading}
               />
-              <Button type="submit" size="icon" disabled={!input.trim() || isLoading} className="rounded-full shrink-0">
-                {isLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
+              <Button type="submit" size="icon" disabled={!input.trim() || isLoading} className="h-12 w-12 rounded-2xl shrink-0 bg-indigo-600 hover:bg-indigo-700 shadow-md">
+                {isLoading ? <Loader2 className="w-5 h-5 animate-spin" /> : <Send className="w-5 h-5" />}
               </Button>
             </form>
-            <p className="text-[10px] text-muted-foreground text-center mt-1">
+            <p className="text-[10px] text-zinc-500 text-center mt-1">
               Konuşmalar kalite ve hizmet standartları gereği kayıt altına alınmaktadır.
             </p>
           </CardFooter>

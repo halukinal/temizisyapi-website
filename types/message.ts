@@ -11,6 +11,9 @@ export interface Message {
   subject?: string;
   message?: string;
   projectDetails?: string;
+  aiSummary?: string;
+  aiWhatsAppMessage?: string;
+  kvkkAccepted: boolean;
   date: Date; // Firestore'dan Timestamp olarak gelir, uygulamada Date'e çevrilir.
   status: 'new' | 'processing' | 'replied';
   read: boolean;

@@ -7,6 +7,7 @@ import "./globals.css"
 import { Suspense } from "react"
 import dynamic from "next/dynamic"
 import { ThemeProvider } from "@/components/theme-provider"
+import { Toaster } from "sonner"
 
 const Chatbot = dynamic(() => import("@/components/chatbot").then(mod => mod.Chatbot), { ssr: false })
 
@@ -60,6 +61,7 @@ export default function RootLayout({
           <Suspense fallback={<div>Loading...</div>}>{children}</Suspense>
           <Chatbot />
           <Analytics />
+          <Toaster richColors position="top-center" />
         </ThemeProvider>
       </body>
     </html>

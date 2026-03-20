@@ -1,5 +1,6 @@
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
+import { Badge } from "@/components/ui/badge"
 import Link from "next/link"
 
 export function AboutSummary() {
@@ -9,20 +10,18 @@ export function AboutSummary() {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
           {/* Content */}
           <div className="space-y-6">
+            <Badge variant="secondary" className="mb-4">1976'dan Günümüze</Badge>
             <h2 className="font-serif text-3xl md:text-4xl font-bold text-primary text-balance">
-              20 Yıllık Tecrübe ile Kaliteli Çözümler
+              48 Yıllık Köklü Tecrübe ve Kaliteli Çözümler
             </h2>
             <p className="text-muted-foreground leading-relaxed text-pretty">
-              Firmamız, alüminyum, cam ve PVC sektöründeki yeniliklerde lider olma misyonuyla hareket eder. Müşteri
-              memnuniyetini temel ilke olarak benimseyerek, en son teknolojileri ve kaliteli malzemeleri kullanarak
-              estetik ve dayanıklı çözümler sunuyoruz.
+              1976 yılında temelleri atılan Temizişyapı, Bursa'nın yapı sektöründeki yarım asra yaklaşan deneyimiyle alüminyum, cam balkon ve PVC sistemlerinde öncü çözümler sunmaktadır. Müşteri memnuniyetini temel ilke olarak benimseyerek, estetik ve dayanıklı projeler üretiyoruz.
             </p>
             <p className="text-muted-foreground leading-relaxed text-pretty">
-              Uzman ekibimizle projelerinizi hayata geçirmek için buradayız. Her projede kalite, güvenilirlik ve müşteri
-              memnuniyetini ön planda tutarak, yaşam alanlarınıza değer katıyoruz.
+              Ustalığımızı teknolojiyle birleştirerek, 48 yıldır güvenle yaşam alanlarınıza değer katıyoruz. Her projede kalite ve dürüstlüğü ön planda tutan uzman ekibimizle hizmetinizdeyiz.
             </p>
-            <Button asChild size="lg" className="bg-primary hover:bg-primary/90">
-              <Link href="/hakkimizda">Daha Fazlasını Öğrenin</Link>
+            <Button asChild size="lg" className="bg-primary hover:bg-primary/90 text-white font-bold transition-transform hover:scale-105">
+              <Link href="/hakkimizda">Hikayemizi Keşfedin</Link>
             </Button>
           </div>
 
