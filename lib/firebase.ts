@@ -1,4 +1,8 @@
-// lib/firebase.ts (Sadece İstemci Tarafı İçin Güvenli)
+// lib/firebase.ts (Sadece İSTEMCİ tarafında çalışır)
+import { initializeApp, getApps, getApp } from "firebase/app";
+import { getFirestore } from "firebase/firestore";
+import { getStorage } from "firebase/storage";
+import { getAuth } from "firebase/auth";
 
 const firebaseConfig = {
     apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
@@ -10,26 +14,19 @@ const firebaseConfig = {
     measurementId: process.env.NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID
 };
 
+let app: any;
 let db: any = null;
 let storage: any = null;
 let auth: any = null;
 
-// Sadece TARAYICI (Browser) ortamında Firebase SDK'yı başlatıyoruz.
-// Cloudflare Workers (Sunucu) tarafında bu SDK eval() kullandığı için hata veriyor.
 if (typeof window !== "undefined") {
-    // Top-level import yerine require kullanarak sunucu tarafında yüklenmesini engelliyoruz.
-    const { initializeApp, getApps, getApp } = require("firebase/app");
-    const { getFirestore } = require("firebase/firestore");
-    const { getStorage } = require("firebase/storage");
-    const { getAuth } = require("firebase/auth");
-
     const isKeyValid = firebaseConfig.apiKey && 
                        firebaseConfig.apiKey.length > 5 && 
                        firebaseConfig.apiKey !== "undefined";
 
     if (isKeyValid) {
         try {
-            const app = !getApps().length ? initializeApp(firebaseConfig) : getApp();
+            app = !getApps().length ? initializeApp(firebaseConfig) : getApp();
             db = getFirestore(app);
             storage = getStorage(app);
             auth = getAuth(app);
@@ -39,4 +36,4 @@ if (typeof window !== "undefined") {
     }
 }
 
-export { db, storage, auth };
+export { app, db, storage, auth };

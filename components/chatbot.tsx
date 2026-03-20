@@ -6,7 +6,9 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Card, CardContent, CardHeader, CardTitle, CardFooter } from "@/components/ui/card"
 import { chatWithAssistant, generateWhatsAppSummary } from "@/actions/chatActions"
-import { db as firebaseDb } from "@/lib/firebase"
+import { db as firebaseDb, auth as firebaseAuth } from "@/lib/firebase"
+import { signInAnonymously, onAuthStateChanged } from "firebase/auth"
+import { doc, getDoc, setDoc, serverTimestamp, collection, addDoc } from "firebase/firestore"
 
 interface ChatMessage {
   role: "user" | "model"
@@ -23,12 +25,63 @@ export function Chatbot() {
   // `isWhatsAppReady` eğer sistem "tamam artık bilgileri aldım" derse aktif olur. 
   // Ya da müşteri dilediği zaman tıklasın diye hep açık da tutabiliriz ama asistan bunu da yönetebilir.
   const [isWhatsAppReady, setIsWhatsAppReady] = useState(false) 
+  const [sessionId, setSessionId] = useState<string | null>(null)
 
   const messagesEndRef = useRef<HTMLDivElement>(null)
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" })
   }
+
+  // 1. Firebase Anonim Giriş ve Session Başlatma
+  useEffect(() => {
+    if (!firebaseAuth) return;
+
+    const unsubscribe = onAuthStateChanged(firebaseAuth, async (user) => {
+      if (user) {
+        setSessionId(user.uid);
+        // Önceki konuşmayı yükle
+        await loadChatHistory(user.uid);
+      } else {
+        try {
+          await signInAnonymously(firebaseAuth);
+        } catch (error) {
+          console.error("Firebase Auth Error:", error);
+        }
+      }
+    });
+
+    return () => unsubscribe();
+  }, []);
+
+  // 2. Geçmişi Firestore'dan Çekme
+  const loadChatHistory = async (uid: string) => {
+    try {
+      const chatDoc = await getDoc(doc(firebaseDb, "chats", uid));
+      if (chatDoc.exists()) {
+        const data = chatDoc.data();
+        if (data.messages && data.messages.length > 0) {
+          setMessages(data.messages);
+        }
+      }
+    } catch (error) {
+      console.error("Error loading chat history:", error);
+    }
+  };
+
+  // 3. Konuşmayı Firestore'da Güncelleme (Yardımcı Fonksiyon)
+  const syncChatToFirebase = async (newMessages: ChatMessage[]) => {
+    if (!sessionId || !firebaseDb) return;
+    try {
+      await setDoc(doc(firebaseDb, "chats", sessionId), {
+        messages: newMessages,
+        lastUpdated: serverTimestamp(),
+        ipHint: "session-based" // Gizlilik için IP yerine session tabanlı olduğunu belirten not
+      }, { merge: true });
+    } catch (error) {
+      console.error("Firestore sync error:", error);
+    }
+  };
 
   useEffect(() => {
     scrollToBottom()
@@ -39,21 +92,27 @@ export function Chatbot() {
     if (!input.trim() || isLoading) return
 
     const userMsg: ChatMessage = { role: "user", content: input }
-    setMessages(prev => [...prev, userMsg])
+    const updatedMessages = [...messages, userMsg]
+    setMessages(updatedMessages)
     setInput("")
     setIsLoading(true)
 
+    // Kullanıcı mesajını anlık kaydet
+    await syncChatToFirebase(updatedMessages)
+
     try {
-      // Konuşma geçmişinin bir kopyasını gönderiyoruz. Sistemin API limitlerinden (token length) dolayı sadece son X mesajı yollayabiliriz.
-      const currentHistory = messages.slice(-10); 
-      
+      const currentHistory = updatedMessages.slice(-10); 
       const response = await chatWithAssistant(currentHistory, userMsg.content)
       
       if (response.isWhatsAppReady) {
         setIsWhatsAppReady(true)
       }
 
-      setMessages(prev => [...prev, { role: "model", content: response.text }])
+      const finalMessages: ChatMessage[] = [...updatedMessages, { role: "model", content: response.text }]
+      setMessages(finalMessages)
+      
+      // Asistan cevabını anlık kaydet
+      await syncChatToFirebase(finalMessages)
     } catch (error) {
       console.error("Chat error:", error)
       setMessages(prev => [...prev, { role: "model", content: "Üzgünüm, şu an bağlantıda bir hata oluştu. Dilerseniz direkt butona basarak WhatsApp üzerinden uzmanımızla iletişime geçebilirsiniz." }])
@@ -66,11 +125,11 @@ export function Chatbot() {
   const handleWhatsAppRedirect = async () => {
     setIsSummarizing(true)
     try {
-      // Konuşmayı Firebase'e kaydet (client-side, Cloudflare Workers'ı etkilemez)
+      // Konuşma özetini "transcripts" koleksiyonuna ek bir kayıt olarak atalım (Admin paneli için)
       try {
-        const { collection, addDoc, serverTimestamp } = require("firebase/firestore");
         const historyText = messages.map(msg => `${msg.role === 'user' ? 'Müşteri' : 'Asistan'}: ${msg.content}`).join('\n')
         await addDoc(collection(firebaseDb, "chat_transcripts"), {
+          sessionId: sessionId,
           type: 'chatbot_conversation',
           transcript: historyText,
           date: serverTimestamp(),
