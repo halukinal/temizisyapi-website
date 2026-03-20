@@ -15,7 +15,10 @@ interface ChatMessage {
 
 export function Chatbot() {
   const [isOpen, setIsOpen] = useState(false)
-  const [messages, setMessages] = useState<ChatMessage[]>([{ role: "model", content: "Merhaba! 👋 Ben Temiz İş Yapı dijital asistanınızım. Size Cam Balkon, PVC, Alüminyum gibi her konuda yardımcı olabilir, keşif ve fiyat taleplerinizi oluşturabilirim. Size nasıl yardımcı olabilirim?" }])
+  const [messages, setMessages] = useState<ChatMessage[]>([{ 
+    role: "model", 
+    content: "Merhaba! 👋 Ben Temiziş Yapı dijital asistanınızım. Size Cam Balkon, PVC ve Alüminyum sistemleri gibi her konuda yardımcı olabilirim.\n\n⚠️ Kişisel verilerinizin korunması ve kalite standartlarımız gereği, bu görüşme **Temiziş Yapı** tarafından kayıt altına alınmaktadır.\n\nSize nasıl yardımcı olabilirim?" 
+  }])
   const [input, setInput] = useState("")
   const [isLoading, setIsLoading] = useState(false)
   const [isSummarizing, setIsSummarizing] = useState(false)
@@ -110,7 +113,10 @@ export function Chatbot() {
     await syncChatToFirebase(updatedMessages)
 
     try {
-      const currentHistory = updatedMessages.slice(-10); 
+      // Önemli: Geçmiş (history) olarak yeni mesajı EKLEMEDEN önceki halini gönderiyoruz.
+      // Çünkü yeni mesaj 'newMessage' parametresiyle ayrıca gidecek.
+      const currentHistory = messages.slice(-15); 
+      
       const response = await chatWithAssistant(currentHistory, userMsg.content)
       
       if (response.isWhatsAppReady) {
