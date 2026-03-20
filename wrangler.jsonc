@@ -1,24 +1,16 @@
 {
-	"$schema": "node_modules/wrangler/config-schema.json",
-	"name": "temizisyapi-website",
-	"main": ".open-next/worker.js",
-	"compatibility_date": "2024-09-26",
-	"compatibility_flags": [
-		"nodejs_compat"
-	],
-	"assets": {
-		"directory": ".open-next/assets",
-		"binding": "NEXT_ASSETS"
-	},
-	"images": {
-		"binding": "APP_IMAGES"
-	},
-	"observability": {
-		"enabled": true,
-		"head_sampling_rate": 1,
-		"logs": {
-			"enabled": true,
-			"invocation_logs": true
-		}
-	}
+    "$schema": "node_modules/wrangler/config-schema.json",
+    "name": "temizisyapi-website",
+    "main": ".open-next/.output/worker.js", // .output klasörünü ekledik
+    "compatibility_date": "2024-09-26",
+    "compatibility_flags": [
+        "nodejs_compat"
+    ],
+    "assets": {
+        "directory": ".open-next/.output/assets", // .output klasörünü ekledik
+        "binding": "ASSETS" // NEXT_ASSETS yerine standart ASSETS kullanımı daha stabildir
+    },
+    "observability": {
+        "enabled": true
+    }
 }
