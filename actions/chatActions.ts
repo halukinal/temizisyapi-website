@@ -1,6 +1,6 @@
 "use server"
 
-import { GoogleGenAI } from "@google/genai"
+import { GoogleGenerativeAI } from "@google/generative-ai"
 import { headers } from "next/headers"
 import { db } from "@/lib/firebase"
 import { collection, addDoc, serverTimestamp } from "firebase/firestore"
@@ -36,17 +36,14 @@ export async function chatWithAssistant(
     chatIpLimits.set(ip, { count: 1, lastRequest: now })
   }
 
-  try {
-    const apiKey = process.env.GEMINI_API_KEY
-    if (!apiKey) {
-      console.error("Critical: GEMINI_API_KEY is not defined in environment variables.")
-      return { text: "Üzgünüm, şu an bağlantıda bir sorun yaşıyorum. Lütfen daha sonra tekrar deneyin.", isWhatsAppReady: false }
-    }
+  const apiKey = process.env.GEMINI_API_KEY
+  if (!apiKey) {
+    console.error("Critical: GEMINI_API_KEY is not defined in environment variables.")
+    return { text: "Üzgünüm, şu an bağlantıda bir sorun yaşıyorum. Lütfen daha sonra tekrar deneyin.", isWhatsAppReady: false }
+  }
 
-    const ai = new GoogleGenAI({ apiKey })
-    
-    // Sistem Promptu (AI'ın Kişiliği ve Görevi)
-    const systemInstruction = `Sen 'Temizişyapı' firmasının yetkili, profesyonel, kibar ve yardımsever sanal asistanısın. 
+  // Sistem Promptu (AI'ın Kişiliği ve Görevi)
+  const systemInstruction = `Sen 'Temizişyapı' firmasının yetkili, profesyonel, kibar ve yardımsever sanal asistanısın. 
 Hizmetlerimiz: Cam Balkon, Kış Bahçesi, PVC Doğrama, Alüminyum ve Cephe Sistemleri.
 
 YANIT VERİRKEN ŞU KURALLARA KESİNLİKLE UY:
@@ -56,39 +53,29 @@ YANIT VERİRKEN ŞU KURALLARA KESİNLİKLE UY:
 4. SORU SOR: Konuşmayı yönlendirmek için mesajının sonunda mutlaka müşteriye tek bir kısa soru sor (Örn: "Balkonunuz L tipi mi yoksa düz mü?").
 5. WHATSAPP YÖNLENDİRMESİ: Müşterinin ne istediğini anladığında veya ölçüleri / rengi vb. aldığında, mesajının en sonuna sadece [WHATSAPP_READY] yaz ve onları WhatsApp uzmanına devret. Gerçek bir fiyat verme, uzmanımız keşif ve indirimli net fiyat için yazacaktır de.`
 
+  try {
+    const genAI = new GoogleGenerativeAI(apiKey)
+    const model = genAI.getGenerativeModel({
+      model: "gemini-2.5-flash-lite",
+      systemInstruction: systemInstruction,
+    })
+
     // Gemini'nin beklediği formata dönüştür
     const formattedHistory = history.map(msg => ({
       role: msg.role === "user" ? "user" : "model",
       parts: [{ text: msg.content }]
     }))
 
-    // Chat oturumu başlat (history ile)
-    const chat = ai.chats.create({
-      model: "gemini-2.5-flash-lite",
-      config: {
-        systemInstruction: systemInstruction,
+    const chat = model.startChat({
+      history: formattedHistory,
+      generationConfig: {
         temperature: 0.7,
       }
     })
 
-    // Geçmişi ekle (Eğer ilk mesaj değilse)
-    // Yeni SDK'da `ai.chats.create` içerisine `history` dizisi geçebiliyor.
-    // Ancak daha güvenli yol `generateContent` veya chat metodudur.
-    
-    const requestContents = [
-      ...formattedHistory,
-      { role: "user", parts: [{ text: newMessage }] }
-    ]
-
-    const response = await ai.models.generateContent({
-      model: "gemini-2.5-flash-lite",
-      contents: requestContents as any, // Cast to any to bypass complex parts type checking for now
-      config: {
-        systemInstruction: systemInstruction,
-      }
-    })
-
-    let reply = response.text || "Üzgünüm, şu an bağlantıda bir sorun yaşıyorum. Lütfen daha sonra tekrar deneyin."
+    const result = await chat.sendMessage(newMessage)
+    const response = await result.response;
+    let reply = response.text();
     let isWhatsAppReady = false
 
     // WhatsApp flag kontrolü
@@ -130,8 +117,6 @@ export async function generateWhatsAppSummary(history: ChatMessage[]): Promise<s
       return "Merhaba, sitenizdeki asistanla konuştum ve detaylı bilgi/fiyat almak istiyorum."
     }
 
-    const ai = new GoogleGenAI({ apiKey })
-    
     const prompt = `Aşağıda bir müşteri ile sanal asistanımız arasında geçen konuşma geçmişi bulunmaktadır.
 Müşteri şu anda WhatsApp iletişime geç butonuna bastı ve müşterinin telefonunda otomatik gönderilmek üzere hazır bir "İlk Mesaj" oluşturmamız gerekiyor.
 DİKKAT: Bu mesajı bizzat *müşterinin ağzından* (birinci tekil şahıs) yaz. Müşteri bu metni okumadan direkt gönderebilecek kadar doğal olmalı.
@@ -147,12 +132,14 @@ MESAJ KURALLARI:
 - Sonunda keşif/fiyat/bilgi talep et.
 - Sadece oluşturduğun mesaj metnini ver, ekstra hiçbir açıklama veya yorum ekleme.`
 
-    const response = await ai.models.generateContent({
+    const genAI = new GoogleGenerativeAI(apiKey)
+    const model = genAI.getGenerativeModel({
       model: "gemini-2.5-flash-lite",
-      contents: prompt,
     })
 
-    return response.text?.trim() || "Merhaba, sitenizdeki asistanla konuştum ve detaylı bilgi/fiyat almak istiyorum."
+    const result = await model.generateContent(prompt)
+    const response = await result.response;
+    return response.text().trim() || "Merhaba, sitenizdeki asistanla konuştum ve detaylı bilgi/fiyat almak istiyorum."
 
   } catch (error) {
     console.error("Summary API Error:", error)

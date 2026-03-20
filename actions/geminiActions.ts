@@ -1,6 +1,6 @@
 "use server"
 
-import { GoogleGenAI } from "@google/genai"
+import { GoogleGenerativeAI } from "@google/generative-ai"
 import { headers } from "next/headers"
 
 // Sunucu belleğinde tutulan basit bir koruma mekanizması (Global singleton)
@@ -70,7 +70,11 @@ export async function generateDesignSuggestion(
       return "Güzel bir kombinasyon. Size özel bu renk seçimi ile projeniz farklılığını ortaya koyacaktır."
     }
 
-    const ai = new GoogleGenAI({ apiKey })
+    const genAI = new GoogleGenerativeAI(apiKey)
+    const model = genAI.getGenerativeModel({ 
+      model: "gemini-2.5-flash-lite", // Reverting back to user's specified model
+    })
+    
     GLOBAL_LIMIT.count++ // API'ye gidecek isteği say
     
     const prompt = `Sen 'Temizişyapı' firmasının yetkili satış asistanı ve yapı/mimari uzmanı bir yapay zeka tasarımcısısın.
@@ -82,12 +86,11 @@ Bir müşteri sitemizdeki modülü kullanarak şu seçimleri yaptı:
 Lütfen bu müşteri için, bu renklerin ve şeklin uyumu hakkında kibar, sofistike ve profesyonel bir tasarımsal tavsiye (veya iltifat) yaz.
 Mesaj en fazla 2 veya 3 kısa cümleden oluşmalı. Çok samimi ("Harika seçim dostum" gibi) OLMAYAN ama güven veren ("Bu renk kombinasyonu modern mimaride çok tercih edilir" minvalinde) bir dil kullan. Sonunda onları net fiyat teklifi ve detaylı keşif için bize ulaşmaya davet et. Markamızı veya iletişim bilgilerini içeren klasik bir son ekleme, çünkü bu metni sadece ufak bir bilgi kartında göstereceğiz. Sadece yoruma odaklan.`
 
-    const response = await ai.models.generateContent({
-      model: "gemini-2.5-flash-lite",
-      contents: prompt,
-    })
+    const result = await model.generateContent(prompt)
+    const response = await result.response;
+    const text = response.text();
 
-    return response.text || "Güzel bir kombinasyon. Size özel bu renk seçimi ile projeniz farklılığını ortaya koyacaktır."
+    return text || "Güzel bir kombinasyon. Size özel bu renk seçimi ile projeniz farklılığını ortaya koyacaktır."
   } catch (error) {
     console.error("Gemini API Error details:", error)
     return "Güzel bir kombinasyon. Size özel bu renk seçimi ile projeniz farklılığını ortaya koyacaktır."
