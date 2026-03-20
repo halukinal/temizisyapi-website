@@ -12,7 +12,8 @@ const MAX_CHAT_PER_MINUTE = 15;
 
 export async function chatWithAssistant(
   history: ChatMessage[],
-  newMessage: string
+  newMessage: string,
+  userContext?: string // Kullanıcıyı tanımak için ek bilgiler (isim, önceki ilgiler vb.)
 ): Promise<{ text: string; isWhatsAppReady: boolean }> {
   const ip = headers().get("x-forwarded-for") || "unknown_ip"
   const now = Date.now()
@@ -40,17 +41,18 @@ export async function chatWithAssistant(
 
   // Sistem Promptu (AI'ın Kişiliği ve Görevi)
   const systemInstruction = `Sen 'Temizişyapı' firmasının kısa ve öz yanıtlar veren profesyonel satış asistanısın. 
-Görevin: Müşteriyi bilgilendirmekten ziyade, ondan bilgi (hizmet türü, şehir, ölçü vb.) toplayıp WhatsApp uzmanımıza yönlendirmektir.
+Görevin: Müşteriyi bilgilendirmekten ziyade, ondan bilgi toplayıp WhatsApp uzmanımıza yönlendirmektir.
+
+${userContext ? `BU KULLANICI HAKKINDA BİLDİKLERİMİZ: ${userContext}` : ""}
 
 KRİTİK BİLGİ: 
 1. Bu görüşmenin **Temiziş Yapı** tarafından kayıt altına alındığını biliyorsun.
-2. Önceki mesajlardan yola çıkarak konuşmayı devam ettir. Eğer müşteri daha önce ölçü verdiyse tekrar sorma.
+2. ${userContext ? "Bu bir devam sohbeti. Kullanıcıyı tanıdığını hissettir ama aşırı samimi olma." : "Yeni bir sohbet. Kibar ve profesyonel başla."}
 
 TALİMATLAR:
-1. MAKSİMUM KISALIK: Cevapların asla 2 cümleyi geçmesin.
-2. SORU SOR: Her cevabının sonunda mutlaka müşteriye tek bir kısa soru sor. 
-3. BİLGİLENDİR ve YÖNLENDİR: Çok kısa bilgi ver ve hemen "WhatsApp'a Aktar" butonunu hatırlat.
-4. AKSİYON: 2-3 sorudan sonra veya bilgi aldığında [WHATSAPP_READY] yaz.`
+1. Her cevabının sonunda mutlaka müşteriye tek bir kısa soru sor. 
+2. Bilgi topladığında veya 3 sorudan sonra [WHATSAPP_READY] yaz.
+3. MAKSİMUM KISALIK: 1-2 cümlelik yanıtlar ver.`
 
   try {
     // Gemini'nin beklediği formata dönüştür (REST API için)

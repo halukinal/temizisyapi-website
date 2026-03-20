@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useRef, useEffect } from "react"
-import { Bot, X, MessageSquare, Send, Loader2 } from "lucide-react"
+import { Bot, X, MessageSquare, Send, Loader2, PlusCircle, RotateCcw } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Card, CardContent, CardHeader, CardTitle, CardFooter } from "@/components/ui/card"
@@ -27,6 +27,12 @@ export function Chatbot() {
   // Ya da müşteri dilediği zaman tıklasın diye hep açık da tutabiliriz ama asistan bunu da yönetebilir.
   const [isWhatsAppReady, setIsWhatsAppReady] = useState(false) 
   const [sessionId, setSessionId] = useState<string | null>(null)
+  const [userContext, setUserContext] = useState<string | null>(null)
+  
+  const initialBotMessage: ChatMessage = { 
+    role: "model", 
+    content: "Merhaba! 👋 Tekrar hoş geldiniz. Sizin için yeni bir sayfa açtım. Size nasıl yardımcı olabilirim?" 
+  }
 
   const messagesEndRef = useRef<HTMLDivElement>(null)
 
@@ -44,8 +50,9 @@ export function Chatbot() {
     const unsubscribe = onAuthStateChanged(firebaseAuth, async (user: any) => {
       if (user) {
         setSessionId(user.uid);
-        // Önceki konuşmayı yükle
+        // Önceki aktif konuşmayı ve kullanıcı bağlamını yükle
         await loadChatHistory(user.uid);
+        await loadUserContext(user.uid);
       } else {
         try {
           await signInAnonymously(firebaseAuth);
@@ -75,6 +82,29 @@ export function Chatbot() {
     }
   };
 
+  // Kullanıcıyı tanımak için arşivleri kontrol et
+  const loadUserContext = async (uid: string) => {
+    if (!firebaseDb) return;
+    try {
+      const { query, collection, where, orderBy, limit, getDocs } = require("firebase/firestore");
+      // Son 1 arşivlenmiş konuşmayı getir
+      const q = query(
+        collection(firebaseDb, "archived_chats"), 
+        where("uid", "==", uid), 
+        orderBy("archivedAt", "desc"), 
+        limit(1)
+      );
+      const snapshot = await getDocs(q);
+      if (!snapshot.empty) {
+        const lastChat = snapshot.docs[0].data();
+        const summary = lastChat.messages.slice(-5).map((m: any) => `${m.role}: ${m.content}`).join(" | ");
+        setUserContext(`Daha önce şu konulardan bahsetmişti: ${summary}`);
+      }
+    } catch (error) {
+      console.error("Error loading user context:", error);
+    }
+  };
+
   // 3. Konuşmayı Firestore'da Güncelleme (Yardımcı Fonksiyon)
   const syncChatToFirebase = async (newMessages: ChatMessage[]) => {
     if (!sessionId || !firebaseDb) {
@@ -92,6 +122,33 @@ export function Chatbot() {
       console.log("Firestore Sync: Konuşma başarıyla güncellendi.");
     } catch (error) {
       console.error("Firestore sync error:", error);
+    }
+  };
+
+  // 4. Yeni Sohbet Başlatma (Ekranı temizle ama kullanıcıyı unutma)
+  const handleNewChat = async () => {
+    if (!sessionId || !firebaseDb || messages.length <= 1) {
+      setMessages([initialBotMessage]);
+      return;
+    }
+
+    try {
+      const { collection, addDoc, serverTimestamp } = require("firebase/firestore");
+      // Mevcut konuşmayı arşive taşı
+      await addDoc(collection(firebaseDb, "archived_chats"), {
+        uid: sessionId,
+        messages: messages,
+        archivedAt: serverTimestamp()
+      });
+
+      // UI'ı temizle
+      setMessages([initialBotMessage]);
+      setIsWhatsAppReady(false);
+
+      // Ana chat belgesini de temizle
+      await syncChatToFirebase([initialBotMessage]);
+    } catch (error) {
+      console.error("New chat error:", error);
     }
   };
 
@@ -117,7 +174,7 @@ export function Chatbot() {
       // Çünkü yeni mesaj 'newMessage' parametresiyle ayrıca gidecek.
       const currentHistory = messages.slice(-15); 
       
-      const response = await chatWithAssistant(currentHistory, userMsg.content)
+      const response = await chatWithAssistant(currentHistory, userMsg.content, userContext || undefined)
       
       if (response.isWhatsAppReady) {
         setIsWhatsAppReady(true)
@@ -187,13 +244,27 @@ export function Chatbot() {
             <div className="flex items-center space-x-2">
               <Bot className="w-6 h-6" />
               <div>
-                <CardTitle className="text-base font-semibold">Temiz İş AI Asistan</CardTitle>
-                <p className="text-xs text-primary-foreground/80">Canlı Destek & Keşif</p>
+                <CardTitle className="text-base font-semibold">Temiziş Yapı Asistan</CardTitle>
+                <div className="flex items-center space-x-2">
+                   <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse" />
+                   <p className="text-[10px] text-primary-foreground/80 font-medium uppercase tracking-wider">Çevrimiçi</p>
+                </div>
               </div>
             </div>
-            <Button variant="ghost" size="icon" onClick={() => setIsOpen(false)} className="text-primary-foreground hover:bg-primary-foreground/20 rounded-full w-8 h-8">
-              <X className="w-5 h-5" />
-            </Button>
+            <div className="flex items-center space-x-1">
+              <Button 
+                variant="ghost" 
+                size="icon" 
+                onClick={handleNewChat} 
+                className="text-primary-foreground hover:bg-primary-foreground/20 rounded-full w-8 h-8"
+                title="Yeni Sohbet Başlat"
+              >
+                <RotateCcw className="w-4 h-4" />
+              </Button>
+              <Button variant="ghost" size="icon" onClick={() => setIsOpen(false)} className="text-primary-foreground hover:bg-primary-foreground/20 rounded-full w-8 h-8">
+                <X className="w-5 h-5" />
+              </Button>
+            </div>
           </CardHeader>
 
           <CardContent className="flex-1 overflow-y-auto p-4 space-y-4">
