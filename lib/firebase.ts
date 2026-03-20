@@ -31,9 +31,16 @@ if (typeof window !== "undefined") {
             db = getFirestore(app);
             storage = getStorage(app);
             auth = getAuth(app);
+            console.log("Firebase initialized successfully on client.");
         } catch (error) {
             console.error("Firebase initialization error:", error);
         }
+    } else {
+        console.warn("Firebase: API Key is missing or invalid! Check environment variables.", {
+            hasKey: !!firebaseConfig.apiKey,
+            keyLength: firebaseConfig.apiKey?.length,
+            apiKey: firebaseConfig.apiKey
+        });
     }
 }
 
