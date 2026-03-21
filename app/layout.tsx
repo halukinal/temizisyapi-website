@@ -57,10 +57,11 @@ export default function RootLayout({
   return (
     <html lang="tr" suppressHydrationWarning>
       <body className={`font-sans ${sourceSansPro.variable} ${playfairDisplay.variable} ${GeistMono.variable}`}>
+        {/* Cloudflare/Bundler __name polyfill */}
+        <script dangerouslySetInnerHTML={{ __html: `window.__name = window.__name || ((f, n) => Object.defineProperty(f, "name", { value: n, configurable: true }));` }} />
         <ThemeProvider attribute="class" defaultTheme="light" disableTransitionOnChange>
           <Suspense fallback={<div>Loading...</div>}>{children}</Suspense>
           <Chatbot />
-          <Analytics />
           <Toaster richColors position="top-center" />
         </ThemeProvider>
       </body>
