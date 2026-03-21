@@ -50,8 +50,8 @@ export async function generateDesignSuggestion(
       ipLimits.set(ip, { count: 1, lastRequest: now })
     } else {
       if (ipData.count >= MAX_PER_IP_MINUTE) {
-         console.warn(`Spam Algılandı: ${ip} adlı kullanıcı 1 dakikada çok fazla hesaplama isteği yolladı.`)
-         return "Çok iyi bir renk tercihi. Projenize farklılık ve hava katacaktır."
+        console.warn(`Spam Algılandı: ${ip} adlı kullanıcı 1 dakikada çok fazla hesaplama isteği yolladı.`)
+        return "Çok iyi bir renk tercihi. Projenize farklılık ve hava katacaktır."
       }
       ipData.count++
       ipData.lastRequest = now
@@ -80,7 +80,7 @@ Lütfen bu müşteri için, bu renklerin ve şeklin uyumu hakkında kibar, sofis
 Mesaj en fazla 2 veya 3 kısa cümleden oluşmalı. Çok samimi ("Harika seçim dostum" gibi) OLMAYAN ama güven veren ("Bu renk kombinasyonu modern mimaride çok tercih edilir" minvalinde) bir dil kullan. Sonunda onları net fiyat teklifi ve detaylı keşif için bize ulaşmaya davet et. Markamızı veya iletişim bilgilerini içeren klasik bir son ekleme, çünkü bu metni sadece ufak bir bilgi kartında göstereceğiz. Sadece yoruma odaklan.`
 
     const res = await fetch(
-      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-lite-preview-02-05:generateContent?key=${apiKey}`,
+      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-lite-lite-preview-02-05:generateContent?key=${apiKey}`,
       {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -108,10 +108,10 @@ export async function generateFormSummary(
   formData: any
 ): Promise<{ summary: string; clientFeedback: string; whatsappMessage: string }> {
   const apiKey = process.env.GEMINI_API_KEY
-  if (!apiKey) return { 
-    summary: "AI Özeti alınamadı.", 
+  if (!apiKey) return {
+    summary: "AI Özeti alınamadı.",
     clientFeedback: "Talebinizi aldık, en kısa sürede dönüş yapacağız.",
-    whatsappMessage: type === 'contact' ? formData.message : formData.description 
+    whatsappMessage: type === 'contact' ? formData.message : formData.description
   }
 
   const prompt = `Sen 'Temizişyapı' firmasının akıllı mimari asistanısın. Aşağıdaki ${type === 'contact' ? 'İletişim' : 'Teklif'} formunu analiz et.
@@ -133,7 +133,7 @@ export async function generateFormSummary(
 
   try {
     const res = await fetch(
-      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-lite-preview-02-05:generateContent?key=${apiKey}`,
+      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-lite-lite-preview-02-05:generateContent?key=${apiKey}`,
       {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -145,7 +145,7 @@ export async function generateFormSummary(
 
     const data = await res.json() as { candidates?: { content?: { parts?: { text: string }[] } }[] }
     const text = data.candidates?.[0]?.content?.parts?.[0]?.text || ""
-    
+
     const summaryMatch = text.match(/ÖZET:\s*(.*)/)
     const tavsiyeMatch = text.match(/TAVSIYE:\s*(.*)/)
     const whatsappMatch = text.match(/WHATSAPP:\s*([\s\S]*)/)
@@ -157,10 +157,10 @@ export async function generateFormSummary(
     }
   } catch (error) {
     console.error("Gemini Summary Error:", error)
-    return { 
-      summary: "Özet oluşturulurken bir hata oluştu.", 
+    return {
+      summary: "Özet oluşturulurken bir hata oluştu.",
       clientFeedback: "Mesajınız başarıyla iletildi. Uzmanlarımız projenizi inceliyor.",
-      whatsappMessage: formData.description || formData.message 
+      whatsappMessage: formData.description || formData.message
     }
   }
 }

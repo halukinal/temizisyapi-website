@@ -8,7 +8,7 @@ interface ChatMessage {
 
 // IP tabanlı spam koruması (Sohbet için)
 const chatIpLimits = new Map<string, { count: number; lastRequest: number }>();
-const MAX_CHAT_PER_MINUTE = 15; 
+const MAX_CHAT_PER_MINUTE = 15;
 
 export async function chatWithAssistant(
   history: ChatMessage[],
@@ -24,7 +24,7 @@ export async function chatWithAssistant(
       chatIpLimits.set(ip, { count: 1, lastRequest: now })
     } else {
       if (ipData.count >= MAX_CHAT_PER_MINUTE) {
-         return { text: "Çok fazla mesaj gönderdiniz. Lütfen kısa bir süre bekleyip tekrar deneyin.", isWhatsAppReady: false, isPricingRedirect: false }
+        return { text: "Çok fazla mesaj gönderdiniz. Lütfen kısa bir süre bekleyip tekrar deneyin.", isWhatsAppReady: false, isPricingRedirect: false }
       }
       ipData.count++
       ipData.lastRequest = now
@@ -74,7 +74,7 @@ STRATEJİ:
     }
 
     const res = await fetch(
-      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-lite-preview-02-05:generateContent?key=${apiKey}`,
+      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-lite:generateContent?key=${apiKey}`,
       {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -142,7 +142,7 @@ MESAJ KURALLARI:
 - Sadece oluşturduğun mesaj metnini ver, ekstra hiçbir açıklama veya yorum ekleme.`
 
     const summaryRes = await fetch(
-      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-lite-preview-02-05:generateContent?key=${apiKey}`,
+      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-lite:generateContent?key=${apiKey}`,
       {
         method: "POST",
         headers: { "Content-Type": "application/json" },

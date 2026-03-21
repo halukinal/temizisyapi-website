@@ -11,6 +11,7 @@
     "deploy": "opennextjs-cloudflare deploy"
   },
   "dependencies": {
+    "@directus/sdk": "^21.2.0",
     "@google/genai": "^1.46.0",
     "@google/generative-ai": "^0.24.1",
     "@hookform/resolvers": "^3.10.0",

@@ -6,47 +6,53 @@ import { Project } from "@/types/project";
 import { GalleryClientContent } from "./gallery-client-content";
 export const dynamic = "force-dynamic";
 
-// Firebase REST API ile Firestore'dan veri çek (Cloudflare Workers uyumlu)
+import client, { getAssetsUrl } from "@/lib/directus";
+import { readItems } from "@directus/sdk";
+
+// Directus'dan veri çek
 async function getProjects(): Promise<Project[]> {
     try {
-        const projectId = process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID;
-        const apiKey = process.env.NEXT_PUBLIC_FIREBASE_API_KEY;
-        if (!projectId || !apiKey) {
-            console.warn("Firebase proje bilgileri eksik.");
-            return [];
-        }
+        // 'galeri' koleksiyonundan verileri çek
+        const items = await client.request(
+            readItems('galeri', {
+                fields: ['*', { images: ['directus_files_id'] }],
+                sort: ['-date_created'],
+            })
+        );
 
-        const url = `https://firestore.googleapis.com/v1/projects/${projectId}/databases/(default)/documents/projects?key=${apiKey}&orderBy=date desc`;
-        const res = await fetch(url, { cache: "no-store" });
-        if (!res.ok) return [];
+        if (!items || items.length === 0) return [];
 
-        const data = await res.json() as { documents?: FirestoreDoc[] };
-        if (!data.documents) return [];
+        return items.map((item: any) => {
+            // Görsel URL'lerini oluştur
+            const thumbnail = item.thumbnail ? getAssetsUrl(item.thumbnail) : "";
+            
+            // Eğer images alanı bir ilişki alanı ise (junction table), ID'leri ayıkla
+            let images: string[] = [];
+            if (Array.isArray(item.images)) {
+                images = item.images.map((img: any) => 
+                    getAssetsUrl(img.directus_files_id || img)
+                );
+            } else if (thumbnail) {
+                images = [thumbnail];
+            }
 
-        return data.documents.map((doc: FirestoreDoc) => {
-            const fields = doc.fields || {};
             return {
-                id: doc.name.split("/").pop() || "",
-                title: fields.title?.stringValue || "",
-                description: fields.description?.stringValue || "",
-                category: (fields.category?.stringValue || "PVC") as Project["category"],
-                images: fields.images?.stringValue ? [fields.images.stringValue] : [],
-                thumbnail: fields.thumbnail?.stringValue || fields.imageUrl?.stringValue || "",
-                date: new Date(fields.date?.timestampValue || Date.now()),
-                location: fields.location?.stringValue || "",
-                featured: false,
-                imagePaths: [],
+                id: item.id.toString(),
+                title: item.title || "",
+                description: item.description || "",
+                category: (item.category || "PVC") as Project["category"],
+                images: images,
+                thumbnail: thumbnail,
+                date: new Date(item.date_created || item.date || Date.now()),
+                location: item.location || "",
+                featured: item.featured || false,
+                imagePaths: [], // Gerekirse doldurulabilir
             } as Project;
         });
     } catch (error) {
-        console.error("Galeri verileri alınamadı:", error);
+        console.error("Directus galeri verileri alınamadı:", error);
         return [];
     }
-}
-
-interface FirestoreDoc {
-    name: string;
-    fields: Record<string, { stringValue?: string; timestampValue?: string; integerValue?: string }>;
 }
 
 
