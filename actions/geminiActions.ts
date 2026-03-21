@@ -80,7 +80,7 @@ Lütfen bu müşteri için, bu renklerin ve şeklin uyumu hakkında kibar, sofis
 Mesaj en fazla 2 veya 3 kısa cümleden oluşmalı. Çok samimi ("Harika seçim dostum" gibi) OLMAYAN ama güven veren ("Bu renk kombinasyonu modern mimaride çok tercih edilir" minvalinde) bir dil kullan. Sonunda onları net fiyat teklifi ve detaylı keşif için bize ulaşmaya davet et. Markamızı veya iletişim bilgilerini içeren klasik bir son ekleme, çünkü bu metni sadece ufak bir bilgi kartında göstereceğiz. Sadece yoruma odaklan.`
 
     const res = await fetch(
-      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`,
+      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-lite-preview-02-05:generateContent?key=${apiKey}`,
       {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -133,7 +133,7 @@ export async function generateFormSummary(
 
   try {
     const res = await fetch(
-      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`,
+      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-lite-preview-02-05:generateContent?key=${apiKey}`,
       {
         method: "POST",
         headers: { "Content-Type": "application/json" },
