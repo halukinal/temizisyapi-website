@@ -16,5 +16,17 @@
     "vars": {
         "NEXTJS_ENV": "production",
         "NODE_VERSION": "20"
-    }
+    },
+    "routes": [
+        {
+            "pattern": "temizisyapi.com",
+            "zone_name": "temizisyapi.com",
+            "custom_domain": true
+        },
+        {
+            "pattern": "www.temizisyapi.com",
+            "zone_name": "temizisyapi.com",
+            "custom_domain": true
+        }
+    ]
 }

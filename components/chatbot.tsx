@@ -188,8 +188,12 @@ export function Chatbot({ embedded = false }: { embedded?: boolean }) {
       
       const response = await chatWithAssistant(currentHistory, userMsg.content, userContext || undefined)
       
-      if (response.isWhatsAppReady) {
+      if (response && response.isWhatsAppReady) {
         setIsWhatsAppReady(true)
+      }
+
+      if (!response) {
+        throw new Error("Boş yanıt döndü");
       }
 
       const finalMessages: ChatMessage[] = [...updatedMessages, { role: "model", content: response.text }]
