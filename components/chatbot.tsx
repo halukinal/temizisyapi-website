@@ -8,23 +8,6 @@ import { Input } from "@/components/ui/input"
 import { Card, CardContent, CardHeader, CardTitle, CardFooter } from "@/components/ui/card"
 import { chatWithAssistant, generateWhatsAppSummary } from "@/actions/chatActions"
 import { db as firebaseDb, auth as firebaseAuth } from "@/lib/firebase"
-import { 
-  onAuthStateChanged, 
-  signInAnonymously 
-} from "firebase/auth"
-import { 
-  getDoc, 
-  doc, 
-  query, 
-  collection, 
-  where, 
-  orderBy, 
-  limit, 
-  getDocs, 
-  setDoc, 
-  serverTimestamp, 
-  addDoc 
-} from "firebase/firestore"
 
 interface ChatMessage {
   role: "user" | "model"
@@ -69,8 +52,8 @@ export function Chatbot({ embedded = false }: { embedded?: boolean }) {
   useEffect(() => {
     if (!firebaseAuth) return;
     
-    // @ts-ignore
-    const unsubscribe = onAuthStateChanged(firebaseAuth!, async (user: any) => {
+    const { onAuthStateChanged, signInAnonymously } = require("firebase/auth");
+    const unsubscribe = onAuthStateChanged(firebaseAuth, async (user: any) => {
       if (user) {
         setSessionId(user.uid);
         // Önceki aktif konuşmayı ve kullanıcı bağlamını yükle
@@ -78,7 +61,7 @@ export function Chatbot({ embedded = false }: { embedded?: boolean }) {
         await loadUserContext(user.uid);
       } else {
         try {
-          await signInAnonymously(firebaseAuth!);
+          await signInAnonymously(firebaseAuth);
         } catch (error) {
           console.error("Firebase Auth Error:", error);
         }
@@ -92,6 +75,7 @@ export function Chatbot({ embedded = false }: { embedded?: boolean }) {
   const loadChatHistory = async (uid: string) => {
     if (!firebaseDb) return;
     try {
+      const { getDoc, doc } = require("firebase/firestore");
       const chatDoc = await getDoc(doc(firebaseDb, "chats", uid));
       if (chatDoc.exists()) {
         const data = chatDoc.data();
@@ -108,6 +92,7 @@ export function Chatbot({ embedded = false }: { embedded?: boolean }) {
   const loadUserContext = async (uid: string) => {
     if (!firebaseDb) return;
     try {
+      const { query, collection, where, orderBy, limit, getDocs } = require("firebase/firestore");
       // Son 1 arşivlenmiş konuşmayı getir
       const q = query(
         collection(firebaseDb, "archived_chats"), 
@@ -134,6 +119,7 @@ export function Chatbot({ embedded = false }: { embedded?: boolean }) {
     }
     
     try {
+      const { setDoc, doc, serverTimestamp } = require("firebase/firestore");
       await setDoc(doc(firebaseDb, "chats", sessionId), {
         messages: newMessages,
         lastUpdated: serverTimestamp(),
@@ -153,6 +139,7 @@ export function Chatbot({ embedded = false }: { embedded?: boolean }) {
     }
 
     try {
+      const { collection, addDoc, serverTimestamp } = require("firebase/firestore");
       // Mevcut konuşmayı arşive taşı
       await addDoc(collection(firebaseDb, "archived_chats"), {
         uid: sessionId,
@@ -241,8 +228,9 @@ export function Chatbot({ embedded = false }: { embedded?: boolean }) {
     try {
       // Konuşma özetini "transcripts" koleksiyonuna ek bir kayıt olarak atalım
       try {
+        const { collection, addDoc, serverTimestamp } = require("firebase/firestore");
         const historyText = messages.map(msg => `${msg.role === 'user' ? 'Müşteri' : 'Asistan'}: ${msg.content}`).join('\n')
-        await addDoc(collection(firebaseDb!, "chat_transcripts"), {
+        await addDoc(collection(firebaseDb, "chat_transcripts"), {
           sessionId: sessionId,
           type: 'chatbot_conversation',
           transcript: historyText,

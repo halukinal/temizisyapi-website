@@ -1,8 +1,4 @@
 // lib/firebase.ts (Sadece İSTEMCİ tarafında çalışır)
-import { initializeApp, getApps, getApp, FirebaseApp } from "firebase/app";
-import { getFirestore, Firestore } from "firebase/firestore";
-import { getStorage, FirebaseStorage } from "firebase/storage";
-import { getAuth, Auth } from "firebase/auth";
 
 const firebaseConfig = {
     apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY || "AIzaSyD6Jku-93vod3rntWC-mW4D5WIAsW4XexA",
@@ -14,10 +10,10 @@ const firebaseConfig = {
     measurementId: process.env.NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID || "G-SMXJ19244X"
 };
 
-let app: FirebaseApp | null = null;
-let db: Firestore | null = null;
-let storage: FirebaseStorage | null = null;
-let auth: Auth | null = null;
+let app: any = null;
+let db: any = null;
+let storage: any = null;
+let auth: any = null;
 
 const isKeyValid = firebaseConfig.apiKey && 
                    firebaseConfig.apiKey.length > 5 && 
@@ -25,6 +21,11 @@ const isKeyValid = firebaseConfig.apiKey &&
 
 if (typeof window !== "undefined" && isKeyValid) {
     try {
+        const { initializeApp, getApps, getApp } = require("firebase/app");
+        const { getFirestore } = require("firebase/firestore");
+        const { getStorage } = require("firebase/storage");
+        const { getAuth } = require("firebase/auth");
+
         app = !getApps().length ? initializeApp(firebaseConfig) : getApp();
         db = getFirestore(app);
         storage = getStorage(app);

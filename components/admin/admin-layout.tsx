@@ -5,11 +5,7 @@ import type React from "react";
 import { useState, useEffect } from "react";
 import { useRouter, usePathname } from "next/navigation";
 import { auth as firebaseAuth } from "@/lib/firebase";
-import { 
-  onAuthStateChanged, 
-  signOut,
-  User 
-} from "firebase/auth";
+import type { User } from "firebase/auth";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { LayoutDashboard, FolderOpen, MessageSquare, Settings, LogOut, Menu, X, Home, BarChart3, Loader2 } from "lucide-react";
@@ -31,7 +27,8 @@ export function AdminLayout({ children }: AdminLayoutProps) {
   useEffect(() => {
     if (!firebaseAuth) return;
     
-    const unsubscribe = onAuthStateChanged(firebaseAuth, (currentUser: User | null) => {
+    const { onAuthStateChanged } = require("firebase/auth");
+    const unsubscribe = onAuthStateChanged(firebaseAuth, (currentUser: any) => {
       if (currentUser) {
         setUser(currentUser);
       } else {
@@ -47,6 +44,7 @@ export function AdminLayout({ children }: AdminLayoutProps) {
 
   const handleLogout = async () => {
     if (!firebaseAuth) return;
+    const { signOut } = require("firebase/auth");
     await signOut(firebaseAuth);
   };
 
