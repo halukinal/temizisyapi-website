@@ -49,13 +49,15 @@ UZMANLIK ALANLARIN:
 3. Pergola & Tavan: Bioclimatic (Biyoklimatik) Pergola, Rolling Roof, Otomatik açılır-kapanır alüminyum tavan sistemleri.
 4. Doğrama: Isı yalıtımlı Alüminyum ve PVC doğrama sistemleri, Kış Bahçesi ve Teras kapatma.
 
-STRATEJİ:
-- Kısa ve öz konuş (1-2 cümle).
+STRATEJİ VE ÇALIŞMA PRENSİPLERİ:
+- Kısa, öz ve kurumsal bir dille konuş (maksimum 2-3 cümle).
 - Önceki konuşmaları (varsa ${userContext ? "hatırla" : "yok"}) dikkate al.
-- Müşteriden uygulama yapılacak yer (Balkon, Teras, Bahçe vb.) veya ölçü bilgisi iste.
-- Her mesajın sonunda tek bir soru sor.
-- Müşteri fiyatlandırma, m2 hesaplama veya maliyet sorarsa, asistanlık yapmak yerine otomatik hesaplama aracına yönlendirmek için [PRICING_PAGE] yaz.
-- Bilgi topladığında veya 2-3 sorudan sonra [WHATSAPP_READY] yaz.`
+- Müşteriden uygulama yapılacak yer (Balkon, Teras, Bahçe vb.) ve yaklaşık ölçü (en x yükseklik) bilgisi iste.
+- Müşteri "ölçü almayı bilmiyorum" veya "metrem yok" derse: Sorun olmadığını, ücretsiz keşif (yerinde ölçüm) hizmetimiz olduğunu ve teknik ekibimizin gelip ölçü alabileceğini belirt.
+- Randevu veya İletişim sorulduğunda: "Hemen bir randevu/görüşme planlayalım. Aşağıda açılan 'Talebimi WhatsApp'a Aktar' butonuna tıklayarak tüm bu bilgileri ekibimize tek tıkla iletebilirsiniz" de ve mutlaka [WHATSAPP_READY] ekle.
+- Fiyatlandırma sorulduğunda: Doğrudan fiyat vermek yerine [PRICING_PAGE] yaz. Yazmadan önce "Sizin için hazırladığımız modül ile anlık fiyat hesaplayabilirsiniz" gibi bir açıklama yap.
+- Teknik detay (ısıcam farkı vb.) sorulduğunda net bilgi ver ve sonraki adıma (ölçü veya iletişim) yönlendir.
+- Mesajın sonunda mutlaka aksiyon aldırıcı bir soru sor veya yönlendirme yap.`
 
   try {
     // Gemini'nin beklediği formata dönüştür (REST API için)
@@ -73,6 +75,8 @@ STRATEJİ:
       generationConfig: { temperature: 0.7 }
     }
 
+    // Not: gemini-2.0-flash-lite henüz genel erişimde tam olmayabilir, en stabil 'gemini-2.5-flash-lite' veya yeni 'gemini-2.0-flash' tercih edilir.
+    // Kullanıcının yazdığı 2.5 muhtemelen 2.0 typo'su idi.
     const res = await fetch(
       `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-lite:generateContent?key=${apiKey}`,
       {
@@ -97,12 +101,13 @@ STRATEJİ:
     if (reply.includes("[PRICING_PAGE]")) {
       isPricingRedirect = true
       reply = reply.replace("[PRICING_PAGE]", "").trim()
-      if (!reply) reply = "Sizin için bir fiyat hesaplama aracımız var. Sizi oraya yönlendiriyorum..."
+      if (!reply) reply = "Sizin için bir fiyat hesaplama aracımız var. Sizi fiyatlandırma sayfasına yönlendiriyorum..."
     }
 
     if (reply.includes("[WHATSAPP_READY]")) {
       isWhatsAppReady = true
       reply = reply.replace("[WHATSAPP_READY]", "").trim()
+      if (!reply) reply = "Harika! Detayları netleştirdik. Şimdi aşağıda beliren buton üzerinden Talebinizi WhatsApp'a aktararak uzman ekibimizle görüşmeyi başlatabilirsiniz."
     }
 
     // Yapay gecikme (Daha doğal bir sohbet hissi için)
