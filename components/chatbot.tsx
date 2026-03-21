@@ -36,10 +36,16 @@ export function Chatbot({ embedded = false }: { embedded?: boolean }) {
     content: "Merhaba! 👋 Tekrar hoş geldiniz. Sizin için yeni bir sayfa açtım. Size nasıl yardımcı olabilirim?" 
   }
 
-  const messagesEndRef = useRef<HTMLDivElement>(null)
+  const containerRef = useRef<HTMLDivElement>(null)
+  const isInitialMount = useRef(true)
 
-  const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" })
+  const scrollToBottom = (behavior: ScrollBehavior = "smooth") => {
+    if (containerRef.current) {
+      containerRef.current.scrollTo({
+        top: containerRef.current.scrollHeight,
+        behavior
+      })
+    }
   }
 
   // 1. Firebase Anonim Giriş ve Session Başlatma
@@ -155,6 +161,12 @@ export function Chatbot({ embedded = false }: { embedded?: boolean }) {
   };
 
   useEffect(() => {
+    if (isInitialMount.current) {
+      isInitialMount.current = false
+      // İlk yüklemede sessizce (smooth olmadan) sona git ama sayfayı kaydırma riskini azalt
+      scrollToBottom("instant")
+      return
+    }
     scrollToBottom()
   }, [messages])
 
@@ -317,7 +329,10 @@ export function Chatbot({ embedded = false }: { embedded?: boolean }) {
             </div>
           </CardHeader>
 
-          <CardContent className={`flex-1 overflow-y-auto p-4 space-y-4 ${embedded ? 'bg-zinc-50/50 min-h-[300px]' : 'bg-zinc-50/30'}`}>
+          <CardContent 
+            ref={containerRef}
+            className={`flex-1 overflow-y-auto p-4 space-y-4 ${embedded ? 'bg-zinc-50/50 min-h-[300px]' : 'bg-zinc-50/30'}`}
+          >
             {messages.map((msg, idx) => (
               <div key={idx} className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"}`}>
                 <div 
@@ -346,7 +361,6 @@ export function Chatbot({ embedded = false }: { embedded?: boolean }) {
                 </div>
               </div>
             )}
-            <div ref={messagesEndRef} />
           </CardContent>
 
           <CardFooter className="p-4 border-t bg-white flex-col gap-3">
