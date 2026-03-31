@@ -36,7 +36,7 @@ services:
       DB_PASSWORD: 'directus_password'
       WEBSOCKETS_ENABLED: 'true'
       CORS_ENABLED: 'true'
-      CORS_ORIGIN: 'http://localhost:3000'
+      CORS_ORIGIN: '*'
       ADMIN_EMAIL: 'admin@temizisyapi.com'
       ADMIN_PASSWORD: 'admin'
 

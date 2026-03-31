@@ -3,8 +3,14 @@
 import { Header } from "@/components/header";
 import { Footer } from "@/components/footer";
 import { Project } from "@/types/project";
+import type { Metadata } from "next";
 import { GalleryClientContent } from "./gallery-client-content";
 export const dynamic = "force-dynamic";
+
+export const metadata: Metadata = {
+  title: "Galeri | Bursa Cam Balkon, Giyotin ve Alüminyum Sistemleri | Temizişyapı",
+  description: "Bursa cam balkon, bursa pimapen, giyotin cam sistemi ve kış bahçesi projelerimizin görselleri. En iyi bursa usta işçiliğiyle hazırlanan galerimizi inceleyin.",
+};
 
 import client, { getAssetsUrl } from "@/lib/directus";
 import { readItems } from "@directus/sdk";
@@ -13,20 +19,23 @@ import { readItems } from "@directus/sdk";
 async function getProjects(): Promise<Project[]> {
     try {
         // 'galeri' koleksiyonundan verileri çek
-        const items = await client.request(
+        const response = await client.request(
             readItems('galeri', {
                 fields: ['*', { images: ['directus_files_id'] }],
-                sort: ['-date_created'],
             })
         );
 
-        if (!items || items.length === 0) return [];
+        // SDK versiyonuna göre response direkt dizi veya { data: [] } olabilir
+        const items = Array.isArray(response) ? response : (response as any).data || [];
+
+        if (!items || items.length === 0) {
+            console.log("Directus: Hiç veri bulunamadı veya izin hatası.");
+            return [];
+        }
 
         return items.map((item: any) => {
-            // Görsel URL'lerini oluştur
             const thumbnail = item.thumbnail ? getAssetsUrl(item.thumbnail) : "";
             
-            // Eğer images alanı bir ilişki alanı ise (junction table), ID'leri ayıkla
             let images: string[] = [];
             if (Array.isArray(item.images)) {
                 images = item.images.map((img: any) => 
@@ -38,15 +47,15 @@ async function getProjects(): Promise<Project[]> {
 
             return {
                 id: item.id.toString(),
-                title: item.title || "",
+                title: item.title || "İsimsiz Proje",
                 description: item.description || "",
                 category: (item.category || "PVC") as Project["category"],
                 images: images,
                 thumbnail: thumbnail,
                 date: new Date(item.date_created || item.date || Date.now()),
                 location: item.location || "",
-                featured: item.featured || false,
-                imagePaths: [], // Gerekirse doldurulabilir
+                featured: !!item.featured,
+                imagePaths: [],
             } as Project;
         });
     } catch (error) {

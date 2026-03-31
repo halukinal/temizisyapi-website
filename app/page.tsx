@@ -10,40 +10,64 @@ import { Chatbot } from "@/components/chatbot"
 export default function HomePage() {
   const jsonLd = {
     "@context": "https://schema.org",
-    "@type": "LocalBusiness",
-    "name": "Temizişyapı",
-    "image": "https://www.temizisyapi.com/logo.png", // Varsayılan logoya göre ayarlanabilir
-    "@id": "https://www.temizisyapi.com",
-    "url": "https://www.temizisyapi.com",
-    "telephone": "05323882864",
-    "address": {
-      "@type": "PostalAddress",
-      "streetAddress": "Beyazıt, Eğitim Cd. no:188",
-      "addressLocality": "Yıldırım",
-      "addressRegion": "Bursa",
-      "postalCode": "16320",
-      "addressCountry": "TR"
-    },
-     "geo": {
-      "@type": "GeoCoordinates",
-      "latitude": 40.1859917,
-      "longitude": 29.0984813
-    },
-    "openingHoursSpecification": {
-      "@type": "OpeningHoursSpecification",
-      "dayOfWeek": [
-        "Monday",
-        "Tuesday",
-        "Wednesday",
-        "Thursday",
-        "Friday",
-        "Saturday"
-      ],
-      "opens": "09:00",
-      "closes": "18:00"
-    },
-    "sameAs": [
-      // Sosyal medya linleri buraya eklenebilir
+    "@graph": [
+      {
+        "@type": "LocalBusiness",
+        "name": "Temizişyapı Bursa",
+        "description": "Bursa cam balkon, bursa pergola, bursa giyotin cam sistemi, bursa alüminyum sistem işleri ve bursa pvc usta hizmetleri sunan 48 yıllık deneyimli yapı firması.",
+        "image": "https://www.temizisyapi.com/logo.png",
+        "@id": "https://www.temizisyapi.com",
+        "url": "https://www.temizisyapi.com",
+        "telephone": "05323882864",
+        "address": {
+          "@type": "PostalAddress",
+          "streetAddress": "Beyazıt, Eğitim Cd. no:188",
+          "addressLocality": "Yıldırım",
+          "addressRegion": "Bursa",
+          "postalCode": "16320",
+          "addressCountry": "TR"
+        },
+        "geo": {
+          "@type": "GeoCoordinates",
+          "latitude": 40.1859917,
+          "longitude": 29.0984813
+        },
+        "openingHoursSpecification": {
+          "@type": "OpeningHoursSpecification",
+          "dayOfWeek": ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"],
+          "opens": "09:00",
+          "closes": "18:00"
+        }
+      },
+      {
+        "@type": "FAQPage",
+        "mainEntity": [
+          {
+            "@type": "Question",
+            "name": "Bursa'da en iyi cam balkon ustasını nasıl bulabilirim?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Temizişyapı, 1976'dan beri Bursa cam balkon, Yıldırım cam balkon ve Nilüfer bölgelerinde uzman ustalarıyla hizmet vermektedir."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "Bursa giyotin cam sistemi ve pergola yapıyor musunuz?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Evet. Bursa giyotin cam sistemi, kış bahçesi, bursa pergola ve bursa sürgülü cam satışı ve montajı alanında tecrübeli ustalarımızla garantili çözümler sunuyoruz."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "Bursa pimapen usta (plastik kapı ve pencere yapımı) hizmetiniz var mı?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Elbette. Bursa pvc usta ve bursa pimapen işleri ana hizmetlerimizdendir. Plastik kapı ve enerji tasarruflu pencere yapımı için ücretsiz keşif sağlıyoruz."
+            }
+          }
+        ]
+      }
     ]
   };
 

@@ -4,151 +4,54 @@ import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { CheckCircle, ArrowRight, Activity, Zap, ShieldCheck, Wrench, Shield, Droplets } from "lucide-react"
 import Link from "next/link"
-import type { Metadata } from "next"
+import client, { getAssetsUrl } from "@/lib/directus"
+import { readItems } from "@directus/sdk"
+import * as LucideIcons from "lucide-react"
+import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Yaptığımız İşler ve Hizmetler | Temizişyapı Bursa",
-  description: "Bursa ve çevre illerde tamamladığımız cam balkon, alüminyum doğrama, PVC pencere ve kış bahçesi projelerimiz. Uzman ekibimizin kaliteli işçiliğine göz atın.",
+  title: "Yaptığımız İşler | Bursa Yapı Firması | Temizişyapı",
+  description: "Bursa pergola, bursa pvc usta, bursa pilastik kapı, bursa pencere yapımı, bursa sürgülü cam, giyotin sistemleri ve uzman alüminyum uygulaması hizmetlerimiz.",
+};
+
+// Directus'tan hizmetleri çek
+async function getServices() {
+  try {
+    const response = await client.request(
+      readItems('hizmetler', {
+        fields: ['*', { images: ['directus_files_id'] }],
+        filter: {
+          status: { _eq: 'published' }
+        },
+        sort: ['sort']
+      })
+    )
+    
+    const items = Array.isArray(response) ? response : (response as any).data || []
+    
+    return items.map((item: any) => {
+      // İkon ismini Lucide bileşenine çevir (Varsayılan: Wrench)
+      const IconName = (item.icon || "Wrench") as keyof typeof LucideIcons;
+      const IconComponent = (LucideIcons[IconName] as any) || LucideIcons.Wrench;
+
+      return {
+        id: item.slug || item.id.toString(),
+        title: item.title || "Adsız Hizmet",
+        description: item.description || "",
+        icon: <IconComponent className="w-6 h-6 text-primary" />,
+        features: Array.isArray(item.features) ? item.features : (item.features ? (item.features as string).split('\n') : []),
+        specifications: Array.isArray(item.specifications) ? item.specifications : [],
+        images: item.images ? item.images.map((img: any) => getAssetsUrl(img.directus_files_id || img)) : []
+      }
+    })
+  } catch (error) {
+    console.error("Directus hizmet verileri alınamadı:", error)
+    return []
+  }
 }
 
-export default function ServicesPage() {
-  const services = [
-    {
-      id: "pvc-systems",
-      title: "PVC Kapı ve Pencere Sistemleri",
-      description:
-        "Enerji verimliliği yüksek, estetik ve uzun ömürlü PVC kapı ve pencere sistemleri ile yaşam konforunuzu artırıyoruz. Modern teknoloji ürünü profillerimiz, hem ısı hem de ses yalıtımı konusunda üstün performans gösterir.",
-      icon: <ShieldCheck className="w-6 h-6 text-primary" />,
-      features: [
-        "Yüksek ısı ve ses yalıtımı",
-        "Enerji tasarrufu sağlayan cam teknolojisi",
-        "Çok noktalı kilit sistemleri ile üst düzey güvenlik",
-        "UV dayanımlı sararmaz profil yapısı",
-        "Kolay bakım ve temizlik imkanı",
-        "10 yıl garanti güvencesi",
-      ],
-      specifications: [
-        { label: "Profil Kalınlığı", value: "70mm - 82mm" },
-        { label: "Cam Kalınlığı", value: "24mm - 32mm" },
-        { label: "Hava Geçirgenliği", value: "Sınıf 4" },
-        { label: "Su Geçirgenliği", value: "Sınıf 9A" },
-        { label: "Rüzgar Yükü Dayanımı", value: "Sınıf C5" },
-      ],
-      images: [
-        "/pvc-window-installation-modern-home.jpg",
-        "/pvc-door-system-energy-efficient.jpg",
-        "/pvc-balcony-door-installation.jpg",
-      ],
-    },
-    {
-      id: "aluminum-systems",
-      title: "Alüminyum Doğrama Sistemleri",
-      description:
-        "Modern mimariye uygun, dayanıklı ve estetik alüminyum kapı, pencere ve cephe sistemleri ile projelerinize değer katıyoruz. İnce profillerle geniş cam alanları ve kesintisiz manzaralar yaratın.",
-      icon: <Activity className="w-6 h-6 text-primary" />,
-      features: [
-        "Yüksek dayanıklılık ve asırlık ömür",
-        "Paslanma ve korozyona karşı tam direnç",
-        "Geniş renk (RAL) ve ahşap doku seçenekleri",
-        "Minimal çerçeve tasarımıyla geniş görüş",
-        "Büyük açıklıklar için uygun sistemler",
-        "Yangına karşı üstün dayanıklılık",
-      ],
-      specifications: [
-        { label: "Profil Kalınlığı", value: "50mm - 85mm" },
-        { label: "Cam Kalınlığı", value: "24mm - 44mm" },
-        { label: "Termal Kesim", value: "Evet (Isı yalıtımlı)" },
-        { label: "Hava Geçirgenliği", value: "Sınıf 4" },
-        { label: "Su Geçirgenliği", value: "Sınıf E1050" },
-      ],
-      images: [
-        "/aluminum-window-modern-building.jpg",
-        "/aluminum-curtain-wall-installation.jpg",
-        "/aluminum-sliding-door-system.jpg",
-      ],
-    },
-    {
-      id: "kis-bahcesi",
-      title: "Kış Bahçesi Sistemleri",
-      description:
-        "Dört mevsim doğayla iç içe yaşamanızı sağlayan, estetik ve yüksek yalıtımlı kış bahçesi çözümlerimizle evinizde yeni bir yaşam alanı yaratıyoruz. Isıcamlı yapısıyla kışın sıcak, yazın serin bir konfor sunar.",
-      icon: <Zap className="w-6 h-6 text-primary" />,
-      features: [
-        "Tüm yıl boyunca kullanım imkanı sağlayan yüksek ısı ve su yalıtımı",
-        "Çatıda güvenlikli temperli lamine cam kullanımı",
-        "Ağır yüklere dayanıklı çelik takviyeli alüminyum profil",
-        "Güneş kontrol özellikli, UV filtreli cam seçenekleri",
-        "Yağmur sularını içeri almayan akıllı su tahliye sistemi",
-        "Evinizin mimarisine uygun modern ve şık tasarım",
-      ],
-      specifications: [
-        { label: "Çatı Camı", value: "4+4 Lamine + 6mm Temperli" },
-        { label: "Taşıyıcı Sistem", value: "Çelik takviyeli alüminyum" },
-        { label: "Yan Kapamalar", value: "Isıcamlı Sürme / Katlanır" },
-        { label: "Kar Yükü Dayanımı", value: "Yüksek sınıf (Bölgeye özel)" },
-        { label: "Aydınlatma Zemin", value: "Gizli LED ve Spot Uyumlu" },
-      ],
-      images: [
-        "/winter-garden-modern-villa.jpg",
-        "/winter-garden-cozy-interior.jpg",
-        "/winter-garden-glass-roof.jpg",
-      ],
-    },
-    {
-      id: "glass-balcony",
-      title: "Cam Balkon Sistemleri",
-      description:
-        "Balkonlarınızı dört mevsim kullanılabilir, ferah ve şık yaşam alanlarına dönüştüren cam balkon çözümleri sunuyoruz. Katlanır veya sürme sistemlerimizle manzaranızı kesmeden koruma sağlayın.",
-      icon: <Shield className="w-6 h-6 text-primary" />,
-      features: [
-        "Toz, gürültü ve hava koşullarından tam korunma",
-        "Manzaranızı asla engellemeyen şeffaf tasarım",
-        "Kolay açılır-kapanır ve temizlenir ergonomik sistem",
-        "Darbelere dayanıklı 8mm veya 10mm tempered güvenlik camı",
-        "Paslanmaz çelik ve alüminyum uzun ömürlü aksesuar",
-        "Bina dış cephesine uyumlu estetik görünüm",
-      ],
-      specifications: [
-        { label: "Cam Kalınlığı", value: "8mm / 10mm Tempered veya Isıcam" },
-        { label: "Profil Malzemesi", value: "Alüminyum" },
-        { label: "Açılım Türü", value: "Sürme veya Katlanır Sistem" },
-        { label: "Rüzgar Dayanımı", value: "120 km/h" },
-        { label: "Renk Seçenekleri", value: "Tüm RAL Kataloğu ve Ahşap Desenler" },
-      ],
-      images: [
-        "/glass-balcony-modern-apartment.jpg",
-        "/glass-balcony-folding-system.jpg",
-        "/glass-balcony-panoramic-view.jpg",
-      ],
-    },
-    {
-      id: "facade-systems",
-      title: "Cephe Sistemleri",
-      description:
-        "Modern binaların dış görünümünü baştan tasarlayan alüminyum kompozit, cam giydirme cephe ve ventile cephe sistemleri uyguluyoruz. Binalarınıza prestij ve değer kazandırın.",
-      icon: <Wrench className="w-6 h-6 text-primary" />,
-      features: [
-        "Binanın enerji tüketimini azaltan verimli cephe çözümleri",
-        "Zorlu hava koşullarına ve UV ışınlarına karşı maksimum dayanıklılık",
-        "Prestijli, estetik ve modern görünüm elde etme",
-        "Uluslararası standartlarda yangın güvenliği",
-        "Dış ortam gürültüsünü engelleyen üstün ses yalıtımı",
-        "Kendi kendini temizleyebilen dış yüzey (opsiyonel)",
-      ],
-      specifications: [
-        { label: "Sistem Türü", value: "Stick / Unitize (Panel) Sistem" },
-        { label: "Cam Türü", value: "Low-E, Tentes, Reflekte, Lamine" },
-        { label: "Profil Yapısı", value: "Termal Kesimli Ağır Alüminyum" },
-        { label: "Yalıtım Malzemesi", value: "Taş Yünü / Mineral Yün" },
-        { label: "Sertifikalar", value: "CE, TSE, ISO 9001" },
-      ],
-      images: [
-        "/facade-system-modern-office.jpg",
-        "/curtain-wall-glass-building.jpg",
-        "/composite-facade-installation.jpg",
-      ],
-    },
-  ]
+export default async function ServicesPage() {
+  const services = await getServices()
 
   return (
     <div className="min-h-screen flex flex-col bg-background">
@@ -177,7 +80,7 @@ export default function ServicesPage() {
         <section className="py-8 pb-24">
           <div className="container mx-auto px-4 sm:px-6 lg:px-8">
             <div className="space-y-32">
-              {services.map((service, index) => {
+              {services.map((service: any, index: number) => {
                 const isEven = index % 2 === 0;
                 return (
                   <div key={service.id} id={service.id} className="scroll-mt-32">
@@ -194,7 +97,7 @@ export default function ServicesPage() {
                           <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
                         </div>
                         <div className="grid grid-cols-2 gap-4">
-                          {service.images.slice(1, 3).map((image, i) => (
+                          {service.images.slice(1, 3).map((image: string, i: number) => (
                             <div key={i} className="relative group overflow-hidden rounded-xl shadow-md">
                               <img
                                 src={image || "/placeholder.svg"}
@@ -210,7 +113,7 @@ export default function ServicesPage() {
                       <div className="lg:w-1/2 flex flex-col justify-center space-y-8">
                         <div className="space-y-4">
                           <div className="inline-flex items-center justify-center p-3 bg-primary/10 rounded-xl mb-2">
-                            {service.icon}
+                             {service.icon}
                           </div>
                           <h2 className="font-serif text-3xl md:text-4xl font-bold text-foreground tracking-tight">
                             {service.title}
@@ -228,7 +131,7 @@ export default function ServicesPage() {
                               Öne Çıkan Özellikler
                             </h3>
                             <ul className="space-y-3">
-                              {service.features.map((feature, featureIndex) => (
+                              {service.features.map((feature: string, featureIndex: number) => (
                                 <li key={featureIndex} className="flex items-start space-x-3 group">
                                   <div className="mt-1 flex-shrink-0 w-5 h-5 rounded-full bg-primary/10 flex items-center justify-center group-hover:bg-primary/20 transition-colors">
                                     <CheckCircle className="h-3.5 w-3.5 text-primary" />
@@ -246,7 +149,7 @@ export default function ServicesPage() {
                               Teknik Detaylar
                             </h3>
                             <div className="bg-muted/40 rounded-xl p-5 border border-border/50 space-y-3">
-                                {service.specifications.map((spec, specIndex) => (
+                                {service.specifications.map((spec: any, specIndex: number) => (
                                   <div key={specIndex} className="flex flex-col space-y-1">
                                     <span className="text-xs font-medium text-muted-foreground uppercase tracking-wider">{spec.label}</span>
                                     <span className="text-sm text-foreground font-medium">{spec.value}</span>

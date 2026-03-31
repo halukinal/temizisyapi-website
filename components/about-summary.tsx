@@ -15,7 +15,7 @@ export function AboutSummary() {
               48 Yıllık Köklü Tecrübe ve Kaliteli Çözümler
             </h2>
             <p className="text-muted-foreground leading-relaxed text-pretty">
-              1976 yılında temelleri atılan Temizişyapı, Bursa'nın yapı sektöründeki yarım asra yaklaşan deneyimiyle alüminyum, cam balkon ve PVC sistemlerinde öncü çözümler sunmaktadır. Müşteri memnuniyetini temel ilke olarak benimseyerek, estetik ve dayanıklı projeler üretiyoruz.
+              1976 yılında temelleri atılan Temizişyapı, <strong>Bursa yapı firması</strong> arayışınızda yarım asra yaklaşan deneyimiyle yanınızda. İster <strong>Bursa cam balkon</strong>, <strong>Bursa giyotin cam sistemi</strong>, ister <strong>Bursa pergola</strong> kurulumu olsun; alüminyum, cam ve PVC sistemlerinde öncü çözümler sunmaktayız. En iyi <strong>Bursa PVC usta</strong> ve <strong>Bursa pimapen usta</strong> kadromuzla, müşteri memnuniyetini temel ilke olarak benimseyerek, estetik ve dayanıklı projeler üretiyoruz.
             </p>
             <p className="text-muted-foreground leading-relaxed text-pretty">
               Ustalığımızı teknolojiyle birleştirerek, 48 yıldır güvenle yaşam alanlarınıza değer katıyoruz. Her projede kalite ve dürüstlüğü ön planda tutan uzman ekibimizle hizmetinizdeyiz.

@@ -41,7 +41,7 @@ export function ServicesOverview() {
         <div className="text-center mb-12">
           <h2 className="font-serif text-3xl md:text-4xl font-bold text-primary mb-4 text-balance">Hizmetlerimiz</h2>
           <p className="text-muted-foreground text-lg max-w-2xl mx-auto text-pretty">
-            Alüminyum, cam ve PVC sektöründe geniş hizmet yelpazesi ile ihtiyaçlarınıza uygun çözümler sunuyoruz.
+            Alüminyum, cam ve PVC sektöründe; <strong>bursa pilastik kapı</strong>, <strong>bursa pencere yapımı</strong>, <strong>bursa sürgülü cam</strong>, ve modern <strong>bursa alüminyum sistem</strong> işleriniz için en deneyimli <strong>bursa usta</strong> ekibiyle ihtiyaçlarınıza uygun kalıcı çözümler üretiyoruz.
           </p>
         </div>
 

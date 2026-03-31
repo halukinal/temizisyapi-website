@@ -8,6 +8,7 @@ import { Suspense } from "react"
 import dynamic from "next/dynamic"
 import { ThemeProvider } from "@/components/theme-provider"
 import { Toaster } from "sonner"
+import { GoogleAnalytics } from "@next/third-parties/google"
 
 const Chatbot = dynamic(() => import("@/components/chatbot").then(mod => mod.Chatbot), { ssr: false })
 
@@ -26,26 +27,32 @@ const sourceSansPro = Source_Sans_3({
 export const metadata: Metadata = {
   metadataBase: new URL('https://www.temizisyapi.com'),
   title: {
-    default: "Temizişyapı | Bursa Alüminyum Doğrama, Cam Balkon ve PVC",
-    template: "%s | Temizişyapı Bursa"
+    default: "Temiz İş Yapı | Modern Yapı ve Tadilat Çözümleri",
+    template: "%s | Temiz İş Yapı"
   },
   description:
-    "Bursa, Nilüfer ve Yıldırım başta olmak üzere tüm Marmara bölgesine profesyonel alüminyum doğrama, cam balkon ve PVC kapı pencere sistemleri hizmeti sunan 20 yıllık köklü firma.",
-  keywords: ["Bursa Cam Balkon", "Bursa Alüminyum Doğrama", "Bursa PVC Pencere", "Yıldırım Cam Balkon", "Nilüfer PVC", "Temizişyapı"],
+    "1976'dan beri cam balkon, PVC ve alüminyum sistemlerinde öncü çözümler. Temiz İş Yapı ile yaşam alanlarınıza değer katın.",
+  keywords: [
+    "bursa", "bursa cam balkon", "Bursa Cam Balkon Ustası", "bursa yapı firması", 
+    "bursa giyotin cam sistemi", "bursa giyotin", "bursa pergola", "bursa kış bahçesi",
+    "bursa alüminyum sistem", "bursa usta", "bursa pvc usta", "bursa pimapen usta", 
+    "bursa pimapen", "bursa pencere yapımı", "bursa sürgülü cam", "bursa pilastik kapı",
+    "Yıldırım Cam Balkon", "Nilüfer PVC", "Bursa Alüminyum Doğrama", "Temizişyapı"
+  ],
   authors: [{ name: "Haluk İnal" }],
   generator: "Haluk İnal",
   openGraph: {
-    title: "Temizişyapı | Bursa Alüminyum, Cam Balkon ve PVC Sistemleri",
-    description: "Profesyonel alüminyum doğrama, cam balkon ve PVC kapı pencere sistemleri. 20 yıllık tecrübe ile Bursa merkezli imalat ve montaj hizmetleri.",
+    title: "Temiz İş Yapı | Modern Yapı ve Tadilat Çözümleri",
+    description: "1976'dan beri cam balkon, PVC ve alüminyum sistemlerinde öncü çözümler. Temiz İş Yapı ile yaşam alanlarınıza değer katın.",
     url: "https://www.temizisyapi.com",
-    siteName: "Temizişyapı",
+    siteName: "Temiz İş Yapı",
     locale: "tr_TR",
     type: "website",
   },
   twitter: {
     card: "summary_large_image",
-    title: "Temizişyapı | Bursa Alüminyum ve Cam Balkon Sistemleri",
-    description: "20 yıllık tecrübe ile Bursa'nın en güvenilir alüminyum, cam balkon ve PVC çözüm ortağı.",
+    title: "Temiz İş Yapı | Modern Yapı ve Tadilat Çözümleri",
+    description: "1976'dan beri cam balkon, PVC ve alüminyum sistemlerinde öncü çözümler. Temiz İş Yapı ile yaşam alanlarınıza değer katın.",
   },
 }
 
@@ -64,6 +71,11 @@ export default function RootLayout({
           <Chatbot />
           <Toaster richColors position="top-center" />
         </ThemeProvider>
+
+        {/* Google Analytics - Sadece ID'yi env dosyasından çekiyoruz */}
+        {process.env.NEXT_PUBLIC_GA_ID && (
+          <GoogleAnalytics gaId={process.env.NEXT_PUBLIC_GA_ID} />
+        )}
       </body>
     </html>
   )
